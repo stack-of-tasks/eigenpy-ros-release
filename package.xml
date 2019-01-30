@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>eigenpy</name>
+  <version>1.5.0</version>
+  <description>Bindings between Numpy and Eigen using Boost.Python - wrapped for catkin.</description>
+  <maintainer email="wolfgang.merkt@ed.ac.uk">Wolfgang Merkt</maintainer>
+  <license>LGPLv3</license>
+
+  <url type="website">https://github.com/stack-of-tasks/eigenpy</url>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>git</build_depend>
+  <depend>python</depend>
+  <depend>python-numpy</depend>
+  <depend>eigen</depend>
+  <depend>boost</depend>
+</package>
