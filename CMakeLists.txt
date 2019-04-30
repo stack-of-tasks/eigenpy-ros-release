@@ -7,13 +7,13 @@ include(ExternalProject)
 
 ExternalProject_Add(eigenpy
   GIT_REPOSITORY "https://github.com/stack-of-tasks/eigenpy.git"
-  GIT_TAG "v1.5.0"
+  GIT_TAG "v1.5.1"
 
   UPDATE_COMMAND ""
   PATCH_COMMAND ""
   TEST_COMMAND ""
 
-  CMAKE_ARGS -DBUILD_UNIT_TESTS:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/install
+  CMAKE_ARGS -DBUILD_UNIT_TESTS:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/install #-DUSE_DEB_LAYOUT:BOOL=${SETUPTOOLS_DEB_LAYOUT}
 )
 ExternalProject_Add_Step(eigenpy CopyToDevel
   COMMENT "Copying to devel"
