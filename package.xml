@@ -1,10 +1,10 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>eigenpy</name>
-  <version>1.5.0</version>
+  <version>1.5.1</version>
   <description>Bindings between Numpy and Eigen using Boost.Python - wrapped for catkin.</description>
   <maintainer email="wolfgang.merkt@ed.ac.uk">Wolfgang Merkt</maintainer>
-  <license>LGPLv3</license>
+  <license>BSD</license>
 
   <url type="website">https://github.com/stack-of-tasks/eigenpy</url>
 
