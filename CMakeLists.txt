@@ -1,53 +1,157 @@
-cmake_minimum_required(VERSION 2.8.12)
-project(eigenpy)
+#
+# Copyright (c) 2014-2019 CNRS
+# Copyright (c) 2018-2019 INRIA
+#
 
-find_package(catkin REQUIRED)
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 
-include(ExternalProject)
+SET(PROJECT_NAME eigenpy)
+SET(PROJECT_DESCRIPTION "Bindings between Numpy and Eigen using Boost.Python")
+SET(PROJECT_URL "http://github.com/stack-of-tasks/eigenpy")
 
-ExternalProject_Add(eigenpy
-  GIT_REPOSITORY "https://github.com/stack-of-tasks/eigenpy.git"
-  GIT_TAG "v1.5.1"
+# Check if the submodule cmake have been initialized
+IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+  MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
+ENDIF()
 
-  UPDATE_COMMAND ""
-  PATCH_COMMAND ""
-  TEST_COMMAND ""
+# Disable -Werror on Unix for now.
+SET(CXX_DISABLE_WERROR True)
+SET(CMAKE_VERBOSE_MAKEFILE True)
 
-  CMAKE_ARGS -DBUILD_UNIT_TESTS:BOOL=OFF -DCMAKE_BUILD_TYPE:STRING=Release -DCMAKE_INSTALL_PREFIX:PATH=${PROJECT_BINARY_DIR}/install #-DUSE_DEB_LAYOUT:BOOL=${SETUPTOOLS_DEB_LAYOUT}
-)
-ExternalProject_Add_Step(eigenpy CopyToDevel
-  COMMENT "Copying to devel"
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/install/lib/libeigenpy.so ${CATKIN_DEVEL_PREFIX}/lib/
-  COMMAND ${CMAKE_COMMAND} -E make_directory ${CATKIN_DEVEL_PREFIX}/lib/python2.7/site-packages/
-  COMMAND ${CMAKE_COMMAND} -E copy ${PROJECT_BINARY_DIR}/install/lib/python2.7/site-packages/eigenpy.so ${CATKIN_DEVEL_PREFIX}/lib/python2.7/site-packages/
-  COMMAND ${CMAKE_COMMAND} -E copy_directory ${PROJECT_BINARY_DIR}/install/include/${PROJECT_NAME}/ ${CATKIN_DEVEL_PREFIX}/include/${PROJECT_NAME}/
-  DEPENDEES install
-)
+INCLUDE(cmake/base.cmake)
+PROJECT(${PROJECT_NAME} CXX)
 
-if(IS_DIRECTORY ${CMAKE_INSTALL_PREFIX})
-  message(STATUS "Compiling for install workspace (${CMAKE_INSTALL_PREFIX})")
-  catkin_package(
-    INCLUDE_DIRS include/${PROJECT_NAME} ${EIGEN3_INCLUDE_DIR}
-    LIBRARIES ${PYTHON_LIBRARIES} eigenpy
+INCLUDE(cmake/boost.cmake)
+INCLUDE(cmake/python.cmake)
+INCLUDE(cmake/ide.cmake)
+INCLUDE(cmake/apple.cmake)
+
+STRING(REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
+
+# If needed, fix CMake policy for APPLE systems
+APPLY_DEFAULT_APPLE_CONFIGURATION()
+
+IF(WIN32)
+  SET(LINK copy_if_different)
+ELSE(WIN32)
+  SET(LINK create_symlink)
+ENDIF(WIN32)
+
+# ----------------------------------------------------
+# --- OPTIONS  ---------------------------------------
+# ----------------------------------------------------
+OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" FALSE)
+OPTION(BUILD_UNIT_TESTS "Build the unitary tests" OFF)
+
+IF(BUILD_UNIT_TESTS)
+  SET(BUILD_TESTING ON)
+ELSE(BUILD_UNIT_TESTS)
+  SET(BUILD_TESTING OFF) 
+ENDIF(BUILD_UNIT_TESTS)
+
+FINDPYTHON()
+
+INCLUDE_DIRECTORIES(SYSTEM ${PYTHON_INCLUDE_DIRS})
+FIND_NUMPY()
+INCLUDE_DIRECTORIES(SYSTEM ${NUMPY_INCLUDE_DIRS})
+
+# ----------------------------------------------------
+# --- DEPENDANCIES -----------------------------------
+# ----------------------------------------------------
+ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
+
+SET(BOOST_COMPONENTS python)
+SEARCH_FOR_BOOST()
+# Add Boost path to include directories.
+INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
+
+# ----------------------------------------------------
+# --- INCLUDE ----------------------------------------
+# ----------------------------------------------------
+SET(${PROJECT_NAME}_SOLVERS_HEADERS
+  include/eigenpy/solvers/solvers.hpp
+  include/eigenpy/solvers/preconditioners.hpp
+  include/eigenpy/solvers/IterativeSolverBase.hpp
+  include/eigenpy/solvers/LeastSquaresConjugateGradient.hpp
+  include/eigenpy/solvers/ConjugateGradient.hpp
+  include/eigenpy/solvers/SparseSolverBase.hpp
+  include/eigenpy/solvers/BasicPreconditioners.hpp
+  include/eigenpy/solvers/BFGSPreconditioners.hpp
   )
-else()
-  message(STATUS "Compiling for devel workspace")
-  file(MAKE_DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/${PROJECT_NAME})
-  catkin_package(
-    INCLUDE_DIRS ${CATKIN_DEVEL_PREFIX}/include ${EIGEN3_INCLUDE_DIR}
-    LIBRARIES ${PYTHON_LIBRARIES} eigenpy
-  )
-endif()
 
-install(
-  DIRECTORY ${CATKIN_DEVEL_PREFIX}/include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+SET(${PROJECT_NAME}_HEADERS
+  ${${PROJECT_NAME}_SOLVERS_HEADERS}
+  include/eigenpy/eigenpy.hpp
+  include/eigenpy/exception.hpp
+  include/eigenpy/expose.hpp
+  include/eigenpy/details.hpp
+  include/eigenpy/fwd.hpp
+  include/eigenpy/map.hpp
+  include/eigenpy/geometry.hpp
+  include/eigenpy/geometry-conversion.hpp
+  include/eigenpy/memory.hpp
+  include/eigenpy/registration.hpp
+  include/eigenpy/angle-axis.hpp
+  include/eigenpy/quaternion.hpp
+  include/eigenpy/stride.hpp
+  include/eigenpy/ref.hpp
+  include/eigenpy/details/rvalue_from_python_data.hpp
 )
-install(
-  FILES ${CATKIN_DEVEL_PREFIX}/lib/libeigenpy.so
-  DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+
+INCLUDE_DIRECTORIES(${${PROJECT_NAME}_BINARY_DIR}/include)
+INCLUDE_DIRECTORIES(${${PROJECT_NAME}_SOURCE_DIR}/include)
+
+LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+
+# ----------------------------------------------------
+# --- TARGETS ----------------------------------------
+# ----------------------------------------------------
+SET(${PROJECT_NAME}_SOLVERS_SOURCES
+  src/solvers/preconditioners.cpp
+  src/solvers/solvers.cpp
+  )
+
+SET(${PROJECT_NAME}_SOURCES
+  ${${PROJECT_NAME}_SOLVERS_SOURCES}
+  src/exception.cpp
+  src/eigenpy.cpp
+  src/angle-axis.cpp
+  src/quaternion.cpp
+  src/geometry-conversion.cpp
 )
-install(
-  FILES ${CATKIN_DEVEL_PREFIX}/lib/python2.7/site-packages/eigenpy.so
-  DESTINATION ${CATKIN_GLOBAL_PYTHON_DESTINATION}
-)
+
+ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
+SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SUFFIX "${PYTHON_EXT_SUFFIX}")
+TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj>)
+
+TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME})
+PKG_CONFIG_USE_DEPENDENCY(${PROJECT_NAME} eigen3)
+INSTALL(TARGETS ${PROJECT_NAME}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_PREFIX}/lib
+  RUNTIME DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
+
+ADD_HEADER_GROUP(${PROJECT_NAME}_HEADERS)
+ADD_SOURCE_GROUP(${PROJECT_NAME}_SOURCES)
+
+INCLUDE(GenerateExportHeader)
+GENERATE_EXPORT_HEADER(${PROJECT_NAME} EXPORT_FILE_NAME eigenpy/${PROJECT_NAME}_export.h)
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
+
+INSTALL(FILES
+  ${CMAKE_CURRENT_BINARY_DIR}/eigenpy/${PROJECT_NAME}_export.h
+  DESTINATION include/eigenpy)
+# ----------------------------------------------------
+# --- PYTHON LIBRARY ---------------------------------
+# ----------------------------------------------------
+ADD_SUBDIRECTORY(python)
+
+# ----------------------------------------------------
+# --- UNIT TEST --------------------------------------
+# ----------------------------------------------------
+ADD_SUBDIRECTORY(unittest)
+
+PKG_CONFIG_APPEND_LIBS(${PROJECT_NAME})
+PKG_CONFIG_APPEND_CFLAGS("-I${PYTHON_INCLUDE_DIRS}")
+PKG_CONFIG_APPEND_CFLAGS("-I${NUMPY_INCLUDE_DIRS}")
+PKG_CONFIG_APPEND_BOOST_LIBS(${BOOST_COMPONENTS})

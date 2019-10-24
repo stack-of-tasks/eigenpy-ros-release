@@ -1,25 +1,49 @@
-# This config file for Travis CI utilizes ros-industrial/industrial_ci package.
-# For more info for the package, see https://github.com/ros-industrial/industrial_ci/blob/master/README.rst
-sudo: required 
-dist: xenial 
-services:
-  - docker
-language: generic 
+language: python
+python:
+  - "2.7"
+  - "3.5"
+sudo: required
 compiler:
   - gcc
+# - clang
 env:
-  matrix:
-    - ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu NOT_TEST_INSTALL=true
-    - ROS_DISTRO="kinetic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu NOT_TEST_INSTALL=true
-    - ROS_DISTRO="kinetic"  PRERELEASE=true
-    - ROS_DISTRO="melodic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros/ubuntu NOT_TEST_INSTALL=true
-    - ROS_DISTRO="melodic"  ROS_REPOSITORY_PATH=http://packages.ros.org/ros-shadow-fixed/ubuntu NOT_TEST_INSTALL=true
-    - ROS_DISTRO="melodic"  PRERELEASE=true
-matrix:
-  allow_failures:
-    - env: ROS_DISTRO="kinetic"  PRERELEASE=true
-    - env: ROS_DISTRO="melodic"  PRERELEASE=true
-install:
-  - git clone https://github.com/ros-industrial/industrial_ci.git .ci_config
+  global:
+    - secure: "SnIBG/xLIHX3CSvUbqqsX8xTVqIqQ7fFS6HWO6KZQVBsT6yugTwYHbyhNiU531JejYJ/I3ZrDhXfYH3qFZiYxnH1sifvwV+fnTtMXpPN7qPZwIymkjcmm6gJF51e0C7VOfUbvKFv0ngwj+ul21rgZSMuoEvxPK0WxtE3/ZSfn9c="
+    - APT_DEPENDENCIES="doxygen libeigen3-dev libboost-test-dev libboost-python-dev"
+    - DEBSIGN_KEYID=5AE5CD75
+    - CC=gcc
+    - DO_COVERAGE_ON_BRANCH="master;release"
+    - DO_CPPCHECK_ON_BRANCH=""
+    - DO_INSTALL_DOC_EXCEPT_ON_BRANCH=""
+    - BUILD_WITH_CATKIN_SUPPORT=false
+    - MAKEFLAGS="-j2"
+
+jobs:
+  include:
+    - dist: bionic
+      env: BUILDTYPE=Release
+    - dist: bionic
+      env: BUILDTYPE=Debug
+    - dist: xenial
+      env: BUILDTYPE=Release
+    - dist: xenial
+      env: BUILDTYPE=Debug
+    - dist: trusty 
+      env: BUILDTYPE=Debug
+
+notifications:
+  email:
+    - pinocchio-build@laas.fr
+branches:
+  only:
+    - master
+    - debian
+    - devel
+before_install: ./.travis/run before_install
+install: pip install coveralls numpy
 script:
-  - source .ci_config/travis.sh
+  - export CMAKE_ADDITIONAL_OPTIONS="-DCMAKE_BUILD_TYPE=${BUILDTYPE}"
+  - sudo free -m -t
+  - ./.travis/run ../travis_custom/custom_build
+after_failure: ./.travis/run after_failure
+after_success: ./.travis/run after_success
