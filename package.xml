@@ -1,17 +1,25 @@
 <?xml version="1.0"?>
 <package format="2">
   <name>eigenpy</name>
-  <version>1.5.1</version>
-  <description>Bindings between Numpy and Eigen using Boost.Python - wrapped for catkin.</description>
+  <version>1.6.2</version>
+  <description>Bindings between Numpy and Eigen using Boost.Python</description>
+  <maintainer email="justin.carpentier@inria.fr">Justin Carpentier</maintainer>
   <maintainer email="wolfgang.merkt@ed.ac.uk">Wolfgang Merkt</maintainer>
+  <author>Justin Carpentier</author>
+  <author>Nicolas Mansard</author>
   <license>BSD</license>
 
   <url type="website">https://github.com/stack-of-tasks/eigenpy</url>
 
-  <buildtool_depend>catkin</buildtool_depend>
   <build_depend>git</build_depend>
+  <build_depend>doxygen</build_depend>
   <depend>python</depend>
   <depend>python-numpy</depend>
   <depend>eigen</depend>
   <depend>boost</depend>
+
+  <buildtool_depend>cmake</buildtool_depend>
+  <export>
+    <build_type>cmake</build_type>
+  </export>
 </package>
