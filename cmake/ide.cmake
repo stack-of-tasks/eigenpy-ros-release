@@ -1,4 +1,4 @@
-# Copyright (C) 2017 LAAS-CNRS, JRL AIST-CNRS.
+# Copyright (C) 2017-2019 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -57,6 +57,12 @@ MACRO(ADD_GROUP GROUP_NAME FILENAMES)
 
   FOREACH(filename ${${FILENAMES}})
     GET_FILENAME_COMPONENT(filenamePath ${filename} PATH)
+    STRING(REGEX REPLACE "${${PROJECT_NAME}_BINARY_DIR}" "" filenamePath "${filenamePath}")
+    STRING(REGEX REPLACE "//" "/" filenamePath "${filenamePath}")
+    STRING(REGEX REPLACE "include" "" filenamePath "${filenamePath}")
+    STRING(REGEX REPLACE "//" "/" filenamePath "${filenamePath}")
+    STRING(REGEX REPLACE "${PROJECT_NAME}" "" filenamePath "${filenamePath}")
+    STRING(REGEX REPLACE "//" "/" filenamePath "${filenamePath}")
     IF(NOT (filenamePath STREQUAL ""))
       IF(NOT ("${prefix}" STREQUAL ""))
         STRING(REGEX REPLACE "${prefix}" "" filenamePath "${filenamePath}/")
