@@ -256,7 +256,7 @@ ENDMACRO()
 #
 # PKG_CONFIG_STRING	: string passed to pkg-config to check the version.
 #			  Typically, this string looks like:
-#                         ``my-package >= 0.5''
+#                         ``my-package>=0.5''
 #
 MACRO(ADD_DEPENDENCY P_REQUIRED COMPILE_TIME_ONLY PKG_CONFIG_STRING PKG_CONFIG_DEBUG_STRING)
   _PARSE_PKG_CONFIG_STRING ("${PKG_CONFIG_STRING}" LIBRARY_NAME PREFIX)
@@ -495,12 +495,12 @@ ENDMACRO(_GET_PKG_CONFIG_DEBUG_STRING)
 #     be found.
 #
 #     :PKG_CONFIG_STRING: string passed to pkg-config to check the version.
-#       Typically, this string looks like: ``my-package >= 0.5``
+#       Typically, this string looks like: ``my-package>=0.5``
 #
 #     :PKG_CONFIG_DEBUG_STRING: (optional) string passed to pkg-config to
 #       check the version. The package found this way will be used in place
 #       of the first provided if the build is happening in DEBUG mode.
-#       This string might look like: ``my-package_d >= 0.5``
+#       This string might look like: ``my-package_d>=0.5``
 #
 #     An optional argument can be passed to define an alternate PKG_CONFIG_STRING
 #     for debug builds. It should follow the same rule as PKG_CONFIG_STRING.
@@ -519,12 +519,12 @@ ENDMACRO(ADD_REQUIRED_DEPENDENCY)
 #     be found.
 #
 #     :PKG_CONFIG_STRING: string passed to pkg-config to check the version.
-#       Typically, this string looks like: ``my-package >= 0.5``
+#       Typically, this string looks like: ``my-package>=0.5``
 #
 #     :PKG_CONFIG_DEBUG_STRING: (optional) string passed to pkg-config to
 #       check the version. The package found this way will be used in place
 #       of the first provided if the build is happening in DEBUG mode.
-#       This string might look like: ``my-package_d >= 0.5``
+#       This string might look like: ``my-package_d>=0.5``
 #
 #     An optional argument can be passed to define an alternate PKG_CONFIG_STRING
 #     for debug builds. It should follow the same rule as PKG_CONFIG_STRING.
@@ -544,12 +544,12 @@ ENDMACRO(ADD_OPTIONAL_DEPENDENCY)
 #     of the PROJECT.
 #
 #     :PKG_CONFIG_STRING: string passed to pkg-config to check the version.
-#       Typically, this string looks like: ``my-package >= 0.5``
+#       Typically, this string looks like: ``my-package>=0.5``
 #
 #     :PKG_CONFIG_DEBUG_STRING: (optional) string passed to pkg-config to
 #       check the version. The package found this way will be used in place
 #       of the first provided if the build is happening in DEBUG mode.  This
-#       string might look like: ``my-package_d >= 0.5``
+#       string might look like: ``my-package_d>=0.5``
 #
 #
 MACRO(ADD_COMPILE_DEPENDENCY PKG_CONFIG_STRING)
@@ -700,20 +700,39 @@ MACRO(PKG_CONFIG_APPEND_LIBS LIBS)
     IF(LIB)
       # Check if this project is building this library
       IF(TARGET ${LIB})
+        SET(LIB_COMPLETE_NAME ${LIB})
         # If OUTPUT_NAME property is defined, use this for the library name.
         GET_PROPERTY(OUTPUT_NAME_SET TARGET ${LIB} PROPERTY OUTPUT_NAME SET)
         IF(OUTPUT_NAME_SET)
           GET_TARGET_PROPERTY(OUTPUT_LIB_NAME ${LIB} OUTPUT_NAME)
-        ELSE(OUTPUT_NAME_SET)
-          SET(OUTPUT_LIB_NAME ${LIB})
         ENDIF(OUTPUT_NAME_SET)
+        # If SUFFIX property is defined, use it for defining the library name.
+        GET_PROPERTY(SUFFIX_SET TARGET ${LIB} PROPERTY SUFFIX SET)
+        IF(SUFFIX_SET)
+          GET_TARGET_PROPERTY(LIB_SUFFIX ${LIB} SUFFIX)
+        ENDIF(SUFFIX_SET)
+        
+        GET_PROPERTY(PREFIX_SET TARGET ${LIB} PROPERTY PREFIX SET)
+        IF(PREFIX_SET)
+          GET_TARGET_PROPERTY(LIB_PREFIX ${LIB} PREFIX)
+        ENDIF(PREFIX_SET)
+        IF(OUTPUT_NAME_SET)
+          SET(LIB_COMPLETE_NAME ${OUTPUT_LIB_NAME})
+        ELSE()
+          SET(LIB_COMPLETE_NAME ${LIB_PREFIX}${LIB}${LIB_SUFFIX})
+        ENDIF()
+        # Remove lib extension if any
+        IF(UNIX OR APPLE)
+          STRING(REPLACE ".so" "" LIB_COMPLETE_NAME ${LIB_COMPLETE_NAME})
+          STRING(REPLACE ".dylib" "" LIB_COMPLETE_NAME ${LIB_COMPLETE_NAME})
+        ENDIF(UNIX OR APPLE)
         # Single build type generator
         IF(DEFINED CMAKE_BUILD_TYPE)
-          SET(_PKG_CONFIG_LIBS "${_PKG_CONFIG_LIBS} ${LIBINCL_KW}${OUTPUT_LIB_NAME}${PKGCONFIG_POSTFIX}${LIB_EXT}" CACHE INTERNAL "")
+          SET(_PKG_CONFIG_LIBS "${_PKG_CONFIG_LIBS} ${LIBINCL_KW}${LIB_COMPLETE_NAME}${PKGCONFIG_POSTFIX}${LIB_EXT}" CACHE INTERNAL "")
         # Multiple build types generator
         ELSE()
-          SET(_PKG_CONFIG_LIBS_DEBUG "${_PKG_CONFIG_LIBS_DEBUG} ${LIBINCL_KW}${OUTPUT_LIB_NAME}${PKGCONFIG_POSTFIX}${LIB_EXT}" CACHE INTERNAL "")
-          SET(_PKG_CONFIG_LIBS_OPTIMIZED "${_PKG_CONFIG_LIBS_OPTIMIZED} ${LIBINCL_KW}${OUTPUT_LIB_NAME}${LIB_EXT}" CACHE INTERNAL "")
+          SET(_PKG_CONFIG_LIBS_DEBUG "${_PKG_CONFIG_LIBS_DEBUG} ${LIBINCL_KW}${LIB_COMPLETE_NAME}${PKGCONFIG_POSTFIX}${LIB_EXT}" CACHE INTERNAL "")
+          SET(_PKG_CONFIG_LIBS_OPTIMIZED "${_PKG_CONFIG_LIBS_OPTIMIZED} ${LIBINCL_KW}${LIB_COMPLETE_NAME}${LIB_EXT}" CACHE INTERNAL "")
         ENDIF()
       ELSE()
         IF(IS_ABSOLUTE ${LIB})
