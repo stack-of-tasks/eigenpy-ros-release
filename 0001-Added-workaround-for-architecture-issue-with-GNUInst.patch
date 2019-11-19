@@ -1,0 +1,25 @@
+From e14a9b747b4ebfe4566208fb76de4b99eed3fbb0 Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Tue, 19 Nov 2019 16:09:56 +0000
+Subject: [PATCH] Added workaround for architecture issue with GNUInstallDirs
+
+---
+ CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 138ef55..bb36118 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -18,6 +18,8 @@ ENDIF()
+ SET(CXX_DISABLE_WERROR True)
+ SET(CMAKE_VERBOSE_MAKEFILE True)
+ 
++set(CMAKE_INSTALL_LIBDIR "lib/")
++
+ INCLUDE(cmake/base.cmake)
+ IF(CMAKE_VERSION VERSION_GREATER "3.0.0")
+   CMAKE_POLICY(SET CMP0048 NEW)
+-- 
+2.17.1
+
