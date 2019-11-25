@@ -1,4 +1,4 @@
-From e14a9b747b4ebfe4566208fb76de4b99eed3fbb0 Mon Sep 17 00:00:00 2001
+From 7672b570333c916adc16db735f0772f42c3ec484 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 19 Nov 2019 16:09:56 +0000
 Subject: [PATCH] Added workaround for architecture issue with GNUInstallDirs
@@ -15,7 +15,7 @@ index 138ef55..bb36118 100644
  SET(CXX_DISABLE_WERROR True)
  SET(CMAKE_VERBOSE_MAKEFILE True)
  
-+set(CMAKE_INSTALL_LIBDIR "lib")
++set(CMAKE_INSTALL_LIBDIR "lib/")
 +
  INCLUDE(cmake/base.cmake)
  IF(CMAKE_VERSION VERSION_GREATER "3.0.0")
