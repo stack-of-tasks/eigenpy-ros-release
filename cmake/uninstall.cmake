@@ -33,4 +33,25 @@ MACRO(_SETUP_PROJECT_UNINSTALL)
     "${CMAKE_COMMAND}" -P
     "${CMAKE_CURRENT_BINARY_DIR}/cmake/cmake_uninstall.cmake"
     )
+
+  CONFIGURE_FILE(
+    "${PROJECT_SOURCE_DIR}/cmake/cmake_reinstall.cmake.in"
+    "${PROJECT_BINARY_DIR}/cmake/cmake_reinstall.cmake.configured"
+    )
+  IF(DEFINED CMAKE_BUILD_TYPE)
+    FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/cmake/${CMAKE_BUILD_TYPE}")
+  ELSE(DEFINED CMAKE_BUILD_TYPE)
+    FOREACH(CFG ${CMAKE_CONFIGURATION_TYPES})
+      FILE(MAKE_DIRECTORY "${PROJECT_BINARY_DIR}/cmake/${CFG}")
+    ENDFOREACH()
+  ENDIF(DEFINED CMAKE_BUILD_TYPE)
+  FILE(GENERATE
+    OUTPUT "${PROJECT_BINARY_DIR}/cmake/$<CONFIGURATION>/cmake_reinstall.cmake"
+    INPUT "${PROJECT_BINARY_DIR}/cmake/cmake_reinstall.cmake.configured"
+    )
+  ADD_CUSTOM_TARGET(
+    reinstall
+    "${CMAKE_COMMAND}" -P
+    "${PROJECT_BINARY_DIR}/cmake/$<CONFIGURATION>/cmake_reinstall.cmake"
+    )
 ENDMACRO(_SETUP_PROJECT_UNINSTALL)
