@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2017 CNRS
+# Copyright (c) 2017-2019 CNRS INRIA
 #
 # This file is part of eigenpy
 # eigenpy is free software: you can redistribute it
@@ -14,5 +14,5 @@
 # eigenpy If not, see
 # <http://www.gnu.org/licenses/>.
 
-import numpy as np
-from eigenpy import *
+from .eigenpy import *
+from .eigenpy import __version__, __raw_version__
