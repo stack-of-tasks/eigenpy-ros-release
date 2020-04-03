@@ -1,17 +1,59 @@
 /*
- * Copyright 2014-2019, CNRS
- * Copyright 2018-2019, INRIA
+ * Copyright 2014-2020 CNRS INRIA
  */
 
 #ifndef __eigenpy_quaternion_hpp__
 #define __eigenpy_quaternion_hpp__
 
-#include "eigenpy/fwd.hpp"
+#include "eigenpy/eigenpy.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 #include "eigenpy/exception.hpp"
+
+namespace boost { namespace python { namespace converter {
+
+  /// \brief Template specialization of rvalue_from_python_data
+  template<typename Quaternion>
+  struct rvalue_from_python_data<Eigen::QuaternionBase<Quaternion> const &>
+  : rvalue_from_python_data_eigen<Quaternion const &>
+  {
+    EIGENPY_RVALUE_FROM_PYTHON_DATA_INIT(Quaternion const &)
+  };
+
+  template <class Quaternion>
+  struct implicit<Quaternion, Eigen::QuaternionBase<Quaternion> >
+  {
+    typedef Quaternion Source;
+    typedef Eigen::QuaternionBase<Quaternion> Target;
+    
+    static void* convertible(PyObject* obj)
+    {
+      // Find a converter which can produce a Source instance from
+      // obj. The user has told us that Source can be converted to
+      // Target, and instantiating construct() below, ensures that
+      // at compile-time.
+      return implicit_rvalue_convertible_from_python(obj, registered<Source>::converters)
+      ? obj : 0;
+    }
+    
+    static void construct(PyObject* obj, rvalue_from_python_stage1_data* data)
+    {
+      void* storage = ((rvalue_from_python_storage<Target>*)data)->storage.bytes;
+      
+      arg_from_python<Source> get_source(obj);
+      bool convertible = get_source.convertible();
+      BOOST_VERIFY(convertible);
+      
+      new (storage) Source(get_source());
+      
+      // record successful construction
+      data->convertible = storage;
+    }
+  };
+
+}}} // namespace boost::python::converter
 
 namespace eigenpy
 {
@@ -113,7 +155,7 @@ namespace eigenpy
       .def("coeffs",(const Vector4 & (Quaternion::*)()const)&Quaternion::coeffs,
            bp::arg("self"),
            "Returns a vector of the coefficients (x,y,z,w)",
-           bp::return_value_policy<bp::copy_const_reference>())
+           bp::return_internal_reference<>())
       .def("matrix",&Quaternion::matrix,
            bp::arg("self"),
            "Returns an equivalent 3x3 rotation matrix. Similar to toRotationMatrix.")
@@ -174,9 +216,13 @@ namespace eigenpy
       .def("__setitem__",&QuaternionVisitor::__setitem__)
       .def("__getitem__",&QuaternionVisitor::__getitem__)
       .def("assign",&assign<Quaternion>,
-           bp::args("self","quat"),"Set *this from an quaternion quat and returns a reference to *this.",bp::return_self<>())
+           bp::args("self","quat"),
+           "Set *this from an quaternion quat and returns a reference to *this.",
+           bp::return_self<>())
       .def("assign",(Quaternion & (Quaternion::*)(const AngleAxis &))&Quaternion::operator=,
-           bp::args("self","aa"),"Set *this from an angle-axis aa and returns a reference to *this.",bp::return_self<>())
+           bp::args("self","aa"),
+           "Set *this from an angle-axis aa and returns a reference to *this.",
+           bp::return_self<>())
       .def("__str__",&print)
       .def("__repr__",&print)
       
@@ -209,9 +255,9 @@ namespace eigenpy
     { return self = quat; }
 
     static Quaternion* FromTwoVectors(const Vector3& u, const Vector3& v)
-    { 
+    {
       Quaternion* q(new Quaternion); q->setFromTwoVectors(u,v);
-      return q; 
+      return q;
     }
   
     static bool __eq__(const Quaternion & u, const Quaternion & v)
@@ -267,7 +313,7 @@ namespace eigenpy
       
       // Cast to Eigen::QuaternionBase and vice-versa
       bp::implicitly_convertible<Quaternion,QuaternionBase >();
-      bp::implicitly_convertible<QuaternionBase,Quaternion >();
+//      bp::implicitly_convertible<QuaternionBase,Quaternion >();
     }
 
   };
