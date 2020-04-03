@@ -1,12 +1,11 @@
 /*
- * Copyright 2014-2019, CNRS
- * Copyright 2018-2019, INRIA
+ * Copyright 2014-2020 CNRS INRIA
  */
 
 #ifndef __eigenpy_angle_axis_hpp__
 #define __eigenpy_angle_axis_hpp__
 
-#include "eigenpy/fwd.hpp"
+#include "eigenpy/eigenpy.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
@@ -62,13 +61,15 @@ namespace eigenpy
       .def(bp::init<Matrix3>
            ((bp::arg("self"),bp::arg("rotation matrix")),
             "Initialize from a rotation matrix"))
-      .def(bp::init<Quaternion>((bp::arg("self"),bp::arg("quaternion")),"Initialize from a quaternion."))
-      .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("copy")),"Copy constructor."))
+      .def(bp::init<Quaternion>((bp::arg("self"),bp::arg("quaternion")),
+                                "Initialize from a quaternion."))
+      .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("copy")),
+                               "Copy constructor."))
       
       /* --- Properties --- */
       .add_property("axis",
-                    bp::make_function((const Vector3 & (AngleAxis::*)()const)&AngleAxis::axis,
-                                      bp::return_value_policy<bp::copy_const_reference>()),
+                    bp::make_function((Vector3 & (AngleAxis::*)())&AngleAxis::axis,
+                                      bp::return_internal_reference<>()),
                     &AngleAxisVisitor::setAxis,"The rotation axis.")
       .add_property("angle",
                     (Scalar (AngleAxis::*)()const)&AngleAxis::angle,
@@ -139,7 +140,7 @@ namespace eigenpy
                             bp::no_init)
       .def(AngleAxisVisitor<AngleAxis>());
       
-      // Cast to Eigen::RotationBase and vice-versa
+      // Cast to Eigen::RotationBase
       bp::implicitly_convertible<AngleAxis,RotationBase>();
     }
 
