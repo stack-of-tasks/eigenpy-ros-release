@@ -31,6 +31,8 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   endif()
 endif()
 
+set(CMAKE_BUILD_TYPE "Release")
+
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
