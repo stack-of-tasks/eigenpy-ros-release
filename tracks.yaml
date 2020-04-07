@@ -44,7 +44,7 @@ tracks:
     patches: null
     release_inc: '1'
     release_repo_url: git@github.com:ipab-slmc/eigenpy_catkin-release.git
-    release_tag: :{ask}
+    release_tag: v:{version}
     ros_distro: melodic
     vcs_type: git
     vcs_uri: https://github.com/stack-of-tasks/eigenpy.git
