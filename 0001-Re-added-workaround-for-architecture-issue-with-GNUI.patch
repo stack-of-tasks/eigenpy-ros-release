@@ -1,0 +1,26 @@
+From 687f24cd329a95e61dfef67ba8f8a269731e2583 Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Thu, 9 Apr 2020 17:20:04 +0100
+Subject: [PATCH] Re-added workaround for architecture issue with
+ GNUInstallDirs
+
+---
+ CMakeLists.txt | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 0fd2955..a15345a 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -21,6 +21,8 @@ ENDIF()
+ SET(CXX_DISABLE_WERROR True)
+ SET(CMAKE_VERBOSE_MAKEFILE True)
+ 
++set(CMAKE_INSTALL_LIBDIR "lib/")
++
+ INCLUDE(cmake/base.cmake)
+ COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+ PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
+-- 
+2.17.1
+
