@@ -11,11 +11,11 @@ assert M.shape == (0,0)
 
 if verbose: print("===> From empty VectorXd to Py")
 v = eigenpy.emptyVector()
-assert v.shape == (0,1)
+assert v.shape == (0,)
 
 if verbose: print("===> From MatrixXd to Py")
 M = eigenpy.naturals(3,3,verbose)
-Mcheck = np.reshape(np.matrix(range(9),np.double),[3,3])
+Mcheck = np.reshape(np.array(range(9),np.double),[3,3])
 assert np.array_equal(Mcheck,M)
 
 if verbose: print("===> From Matrix3d to Py")
@@ -24,13 +24,17 @@ assert np.array_equal(Mcheck,M33)
 
 if verbose: print("===> From VectorXd to Py")
 v = eigenpy.naturalsX(3,verbose)
-vcheck = np.matrix([range(3),],np.double).T
+vcheck = np.array(range(3),np.double).T
 assert np.array_equal(vcheck ,v)
 
 if verbose: print("===> From Py to Eigen::MatrixXd")
 if verbose: print("===> From Py to Eigen::MatrixXd")
 if verbose: print("===> From Py to Eigen::MatrixXd")
-Mref = np.reshape(np.matrix(range(64),np.double),[8,8])
+Mref = np.reshape(np.array(range(64),np.double),[8,8])
+
+# Test base function
+Mref_from_base = eigenpy.base(Mref)
+assert( np.array_equal(Mref,Mref_from_base) );
 
 if verbose: print("===> Matrix 8x8")
 M = Mref
@@ -58,19 +62,19 @@ assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
 
 if verbose: print("===> Block Vector 1x0:6:2")
 M = Mref[1:2,0:6:2]
-assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
+assert( np.array_equal(M.squeeze(),eigenpy.reflex(M,verbose)) );
 
 if verbose: print("===> Block Vector 1x0:6:2 tanspose")
 M = Mref[1:2,0:6:2].T
-assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
+assert( np.array_equal(M.squeeze(),eigenpy.reflex(M,verbose)) );
 
 if verbose: print("===> Block Vector 0:6:2x1")
 M = Mref[0:6:2,1:2]
-assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
+assert( np.array_equal(M.squeeze(),eigenpy.reflex(M,verbose)) );
 
 if verbose: print("===> Block Vector 0:6:2x1 tanspose")
 M = Mref[0:6:2,1:2].T
-assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
+assert( np.array_equal(M.squeeze(),eigenpy.reflex(M,verbose)) );
 
 if verbose: print("===> From Py to Eigen::VectorXd")
 if verbose: print("===> From Py to Eigen::VectorXd")
@@ -83,7 +87,7 @@ M = Mref[0:6:2,1].T
 
 if verbose: print("===> Block Vector 0:6:2x1")
 M = Mref[0:6:2,1:2]
-assert( np.array_equal(M,eigenpy.reflexV(M,verbose)) );
+assert( np.array_equal(M.squeeze(),eigenpy.reflexV(M,verbose)) );
 
 if verbose: print("===> Block Vector 0:6:2x1 transpose")
 M = Mref[0:6:2,1:2].T
@@ -113,3 +117,12 @@ if verbose: print("===> From Py to Eigen::Vector3d")
 # TODO
 # M = Mref[0:3,1:2]
 # assert( np.array_equal(M,eigenpy.reflex3(M,verbose)) );
+
+value = 2.
+mat1x1 = eigenpy.matrix1x1(value)
+assert(mat1x1.size == 1)
+assert(mat1x1[0,0] == value)
+
+vec1x1 = eigenpy.vector1x1(value)
+assert(vec1x1.size == 1)
+assert(vec1x1[0] == value)

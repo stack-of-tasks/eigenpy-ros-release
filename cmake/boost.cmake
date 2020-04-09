@@ -56,16 +56,23 @@ ENDFUNCTION(SEARCH_FOR_BOOST_COMPONENT boost_python_name found)
 #  to automatically detect the right boost-python component version according
 #  to the Python version (2.7 or 3.x).
 #
+
+IF(CMAKE_VERSION VERSION_LESS "3.12")
+  SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/boost ${CMAKE_MODULE_PATH})
+  MESSAGE(STATUS "CMake versions older than 3.12 may warn when looking to Boost components. Custom macros are used to find it.")
+ENDIF(CMAKE_VERSION VERSION_LESS "3.12")
+
 MACRO(SEARCH_FOR_BOOST)
   SET(Boost_USE_STATIC_LIBS OFF)
   SET(Boost_USE_MULTITHREAD ON)
 
   # First try to find Boost to get the version
   FIND_PACKAGE(Boost ${BOOST_REQUIRED})
-  IF("${Boost_VERSION}" VERSION_GREATER "1.69.99")
+  STRING(REPLACE "_" "." Boost_SHORT_VERSION ${Boost_LIB_VERSION})
+  IF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
     SET(BUILD_SHARED_LIBS ON)
     SET(Boost_NO_BOOST_CMAKE ON)
-  ENDIF("${Boost_VERSION}" VERSION_GREATER "1.69.99")
+  ENDIF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
 
   IF(NOT DEFINED BOOST_COMPONENTS)
     SET(BOOST_COMPONENTS
@@ -86,13 +93,13 @@ MACRO(SEARCH_FOR_BOOST)
 
     # 3rd step: check BOOST_VERSION 
     SET(BOOST_PYTHON_WITH_PYTHON_VERSION_NAMING FALSE)
-    IF(${Boost_VERSION} VERSION_GREATER "1.66.99")
+    IF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
       SET(BOOST_PYTHON_WITH_PYTHON_VERSION_NAMING TRUE)
-    ELSE(${Boost_VERSION} VERSION_GREATER "1.66.99")
+    ELSE("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
       IF(${PYTHON_VERSION_MAJOR} EQUAL 3) 
         SET(BOOST_PYTHON_WITH_PYTHON_VERSION_NAMING TRUE)
       ENDIF(${PYTHON_VERSION_MAJOR} EQUAL 3) 
-    ENDIF(${Boost_VERSION} VERSION_GREATER "1.66.99")
+    ENDIF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
 
     # 4th step: retrive BOOST_PYTHON_MODULE naming
     IF(BOOST_PYTHON_WITH_PYTHON_VERSION_NAMING)
@@ -193,11 +200,12 @@ MACRO(SEARCH_FOR_BOOST)
 ENDMACRO(SEARCH_FOR_BOOST)
 
 #.rst:
-# .. command:: TARGET_LINK_BOOST_PYTHON (TARGET)
+# .. command:: TARGET_LINK_BOOST_PYTHON (TARGET <PRIVATE|PUBLIC|INTERFACE>)
 #
 #   Link target againt boost_python library.
 #
-#   :TARGET: is either a library or an executable
+#   :target: is either a library or an executable
+#   :private,public,interface: The PUBLIC, PRIVATE and INTERFACE keywords can be used to specify both the link dependencies and the link interface.
 #
 #   On darwin systems, boost_python is not linked against any python library.
 #   This linkage is resolved at execution time via the python interpreter.
@@ -205,6 +213,10 @@ ENDMACRO(SEARCH_FOR_BOOST)
 #   Otherwise, for executables we need to link to a specific version of python.
 #
 MACRO(TARGET_LINK_BOOST_PYTHON target)
+  IF(${ARGC} GREATER 1)
+    SET(PUBLIC_KEYWORD ${ARGV1})
+  ENDIF()
+
   IF(APPLE)
     GET_TARGET_PROPERTY(TARGET_TYPE ${target} TYPE)
 
@@ -231,9 +243,7 @@ ENDMACRO(TARGET_LINK_BOOST_PYTHON)
 #     PKG_CONFIG_APPEND_BOOST_LIBS(system filesystem)
 #
 MACRO(PKG_CONFIG_APPEND_BOOST_LIBS)
-  IF(NOT APPLE)
-    PKG_CONFIG_APPEND_LIBRARY_DIR("${Boost_LIBRARY_DIRS}")
-  ENDIF()
+  PKG_CONFIG_APPEND_LIBRARY_DIR("${Boost_LIBRARY_DIRS}")
 
   FOREACH(COMPONENT ${ARGN})
     STRING(TOUPPER ${COMPONENT} UPPERCOMPONENT)
@@ -246,11 +256,17 @@ MACRO(PKG_CONFIG_APPEND_BOOST_LIBS)
       SET(LIB_PATH ${Boost_${UPPERCOMPONENT}_LIBRARY_RELEASE})
     ENDIF()
 
+    IF("${LIB_PATH}" STREQUAL "")
+      SET(LIB_PATH ${Boost_${UPPERCOMPONENT}_LIBRARY})
+    ENDIF("${LIB_PATH}" STREQUAL "")
+
     IF(APPLE)
+      GET_FILENAME_COMPONENT(LIB_NAME ${LIB_PATH} NAME_WE)
+      STRING(REGEX REPLACE "^lib" "" LIB_NAME "${LIB_NAME}")
       IF("${LOWERCOMPONENT}" MATCHES "python")
-        PKG_CONFIG_APPEND_LIBS_RAW(-Wl,-undefined,dynamic_lookup,${LIB_PATH})
+        PKG_CONFIG_APPEND_LIBS_RAW(-Wl,-undefined,dynamic_lookup,-l${LIB_NAME})
       ELSE("${LOWERCOMPONENT}" MATCHES "python")
-        PKG_CONFIG_APPEND_LIBS_RAW(${LIB_PATH})
+        PKG_CONFIG_APPEND_LIBS_RAW(-l${LIB_NAME})
       ENDIF("${LOWERCOMPONENT}" MATCHES "python")
     ELSEIF(WIN32)
       GET_FILENAME_COMPONENT(LIB_NAME ${LIB_PATH} NAME)

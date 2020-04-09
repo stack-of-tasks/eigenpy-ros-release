@@ -1,17 +1,35 @@
 /*
  * Copyright 2014-2019, CNRS
- * Copyright 2018-2019, INRIA
+ * Copyright 2018-2020, INRIA
  */
 
 #include "eigenpy/eigenpy.hpp"
+#include <stdlib.h>
 
 namespace eigenpy
 {
+
+  void seed(unsigned int seed_value)
+  {
+    srand(seed_value);
+  }
+
+  void exposeMatrixInt();
+  void exposeMatrixLong();
+  void exposeMatrixFloat();
+  void exposeMatrixDouble();
+  void exposeMatrixLongDouble();
+
+  void exposeMatrixComplexFloat();
+  void exposeMatrixComplexDouble();
+  void exposeMatrixComplexLongDouble();
 
   /* Enable Eigen-Numpy serialization for a set of standard MatrixBase instances. */
   void enableEigenPy()
   {
     using namespace Eigen;
+    import_numpy();
+    
     Exception::registerException();
     
     bp::def("setNumpyType",&NumpyType::setNumpyType,
@@ -26,63 +44,30 @@ namespace eigenpy
     
     bp::def("switchToNumpyMatrix",&NumpyType::switchToNumpyMatrix,
             "Set the conversion from Eigen::Matrix to numpy.matrix.");
-
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2Xd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2Xf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix2Xi);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3Xd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3Xf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix3Xi);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4Xd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4Xf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Matrix4Xi);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX2d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX2f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX2i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX3d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX3f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX3i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX4d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX4f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixX4i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixXd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixXf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(MatrixXi);
-
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector2d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector2f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector2i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector3d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector3f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector3i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector4d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector4f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVector4i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVectorXd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVectorXf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(RowVectorXi);
-
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector2d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector2f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector2i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector3d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector3f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector3i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector4d);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector4f);
-    ENABLE_SPECIFIC_MATRIX_TYPE(Vector4i);
-    ENABLE_SPECIFIC_MATRIX_TYPE(VectorXd);
-    ENABLE_SPECIFIC_MATRIX_TYPE(VectorXf);
-    ENABLE_SPECIFIC_MATRIX_TYPE(VectorXi);
+    
+    bp::def("sharedMemory",
+            (void (*)(const bool))NumpyType::sharedMemory,
+            bp::arg("value"),
+            "Share the memory when converting from Eigen to Numpy.");
+    
+    bp::def("sharedMemory",
+            (bool (*)())NumpyType::sharedMemory,
+            "Status of the shared memory when converting from Eigen to Numpy.\n"
+            "If True, the memory is shared when converting an Eigen::Matrix to a numpy.array.\n"
+            "Otherwise, a deep copy of the Eigen::Matrix is performed.");
+    
+    bp::def("seed",&seed,bp::arg("seed_value"),
+            "Initialize the pseudo-random number generator with the argument seed_value.");
+    
+    exposeMatrixInt();
+    exposeMatrixLong();
+    exposeMatrixFloat();
+    exposeMatrixDouble();
+    exposeMatrixLongDouble();
+    
+    exposeMatrixComplexFloat();
+    exposeMatrixComplexDouble();
+    exposeMatrixComplexLongDouble();
   }
 
 } // namespace eigenpy

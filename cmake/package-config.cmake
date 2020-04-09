@@ -51,27 +51,40 @@ set(_PACKAGE_CONFIG_DEPENDENCIES "" CACHE INTERNAL "")
 ENDMACRO(_SETUP_PROJECT_PACKAGE_INIT)
 
 #.rst:
-# .. command:: ADD_PROJECT_DEPENDENCY(ARGS)
+# .. command:: ADD_PROJECT_DEPENDENCY(ARGS [PKG_CONFIG_REQUIRES pkg])
 #
 #   This is a wrapper around find_package to add correct find_dependency calls in
-#   the generated config script. All arguments are passed to find_package
+#   the generated config script. All arguments are passed to find_package.
+#
+#   In cases where find_package is not supported by a project, or only in recent
+#   versions, one should provide a custom <PackageName>Config.cmake or use a more
+#   traditional way to get a dependency.
+#
+#   If PKG_CONFIG_REQUIRES is provided, it will also add pkg to the Requires
+#   section of the generated .pc file
 #
 MACRO(ADD_PROJECT_DEPENDENCY)
   list(APPEND _PACKAGE_CONFIG_DEPENDENCIES_PROJECTS "${ARGV0}")
-  string(REPLACE ";" " " PACKAGE_ARGS "${ARGN}")
+
+  # add dependency to the generated .pc
+  # ref https://github.com/jrl-umi3218/jrl-cmakemodules/pull/335
+  cmake_parse_arguments(PARSED_ARGN "" "PKG_CONFIG_REQUIRES" "" ${ARGN})
+  _ADD_TO_LIST(_PKG_CONFIG_REQUIRES "${PARSED_ARGN_PKG_CONFIG_REQUIRES}" ",")
+
+  string(REPLACE ";" " " PACKAGE_ARGS "${PARSED_ARGN_UNPARSED_ARGUMENTS}")
   if(${CMAKE_VERSION} VERSION_LESS "3.15.0")
     list(APPEND _PACKAGE_CONFIG_DEPENDENCIES "find_package(${PACKAGE_ARGS})")
   else()
     list(APPEND _PACKAGE_CONFIG_DEPENDENCIES "find_dependency(${PACKAGE_ARGS})")
   endif()
-  find_package(${ARGN})
+  find_package(${PARSED_ARGN_UNPARSED_ARGUMENTS})
 ENDMACRO()
 
 
 # SETUP_PROJECT_PACKAGE_FINALIZE
 # -------------
 #
-# Generates CMake PackageConfig.cmake, Targets, and Version 
+# Generates CMake PackageConfig.cmake, Targets, and Version
 # files so users can call:
 #
 # find_package(MyPackage)
@@ -122,6 +135,16 @@ write_basic_package_version_file(
 # Use variables:
 #   * TARGETS_EXPORT_NAME
 #   * PROJECT_NAME
+#   * _PKG_CONFIG_REQUIRES_LIST
+string(REPLACE "," ";" _PKG_CONFIG_REQUIRES_LIST "${_PKG_CONFIG_REQUIRES}")
+unset(_PKG_CONFIG_REQUIRES_STRIPPED)
+foreach(_pkg ${_PKG_CONFIG_REQUIRES_LIST})
+  string(STRIP "${_pkg}" _pkg_stripped)
+  list(APPEND _PKG_CONFIG_REQUIRES_STRIPPED ${_pkg_stripped})
+endforeach()
+list(REMOVE_DUPLICATES _PKG_CONFIG_REQUIRES_STRIPPED)
+set(_PKG_CONFIG_REQUIRES_LIST ${_PKG_CONFIG_REQUIRES_STRIPPED})
+unset(_PKG_CONFIG_REQUIRES_STRIPPED)
 configure_package_config_file(
     "cmake/Config.cmake.in"
     "${PROJECT_CONFIG}"
