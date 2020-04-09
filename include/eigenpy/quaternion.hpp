@@ -1,18 +1,59 @@
 /*
- * Copyright 2014-2019, CNRS
- * Copyright 2018-2019, INRIA
+ * Copyright 2014-2020 CNRS INRIA
  */
 
 #ifndef __eigenpy_quaternion_hpp__
 #define __eigenpy_quaternion_hpp__
 
-#include "eigenpy/fwd.hpp"
+#include "eigenpy/eigenpy.hpp"
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 
 #include "eigenpy/exception.hpp"
-#include "eigenpy/registration.hpp"
+
+namespace boost { namespace python { namespace converter {
+
+  /// \brief Template specialization of rvalue_from_python_data
+  template<typename Quaternion>
+  struct rvalue_from_python_data<Eigen::QuaternionBase<Quaternion> const &>
+  : rvalue_from_python_data_eigen<Quaternion const &>
+  {
+    EIGENPY_RVALUE_FROM_PYTHON_DATA_INIT(Quaternion const &)
+  };
+
+  template <class Quaternion>
+  struct implicit<Quaternion, Eigen::QuaternionBase<Quaternion> >
+  {
+    typedef Quaternion Source;
+    typedef Eigen::QuaternionBase<Quaternion> Target;
+    
+    static void* convertible(PyObject* obj)
+    {
+      // Find a converter which can produce a Source instance from
+      // obj. The user has told us that Source can be converted to
+      // Target, and instantiating construct() below, ensures that
+      // at compile-time.
+      return implicit_rvalue_convertible_from_python(obj, registered<Source>::converters)
+      ? obj : 0;
+    }
+    
+    static void construct(PyObject* obj, rvalue_from_python_stage1_data* data)
+    {
+      void* storage = ((rvalue_from_python_storage<Target>*)data)->storage.bytes;
+      
+      arg_from_python<Source> get_source(obj);
+      bool convertible = get_source.convertible();
+      BOOST_VERIFY(convertible);
+      
+      new (storage) Source(get_source());
+      
+      // record successful construction
+      data->convertible = storage;
+    }
+  };
+
+}}} // namespace boost::python::converter
 
 namespace eigenpy
 {
@@ -69,25 +110,25 @@ namespace eigenpy
     void visit(PyClass& cl) const 
     {
       cl
-      .def(bp::init<>("Default constructor"))
-      .def(bp::init<Vector4>((bp::arg("vec4")),
+      .def(bp::init<>(bp::arg("self"),"Default constructor"))
+      .def(bp::init<Vector4>((bp::arg("self"),bp::arg("vec4")),
                              "Initialize from a vector 4D.\n"
                              "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw."))
-      .def(bp::init<Matrix3>((bp::arg("R")),
+      .def(bp::init<Matrix3>((bp::arg("self"),bp::arg("R")),
                              "Initialize from rotation matrix.\n"
                              "\tR : a rotation matrix 3x3."))
-      .def(bp::init<AngleAxis>((bp::arg("aa")),
+      .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("aa")),
                                "Initialize from an angle axis.\n"
                                "\taa: angle axis object."))
-      .def(bp::init<Quaternion>((bp::arg("quat")),
+      .def(bp::init<Quaternion>((bp::arg("self"),bp::arg("quat")),
                                 "Copy constructor.\n"
                                 "\tquat: a quaternion."))
       .def("__init__",bp::make_constructor(&QuaternionVisitor::FromTwoVectors,
                                            bp::default_call_policies(),
-                                           (bp::arg("u: a 3D vector"),bp::arg("v: a 3D vector"))),
+                                           (bp::arg("u"),bp::arg("v"))),
            "Initialize from two vectors u and v")
       .def(bp::init<Scalar,Scalar,Scalar,Scalar>
-           ((bp::arg("w"),bp::arg("x"),bp::arg("y"),bp::arg("z")),
+           ((bp::arg("self"),bp::arg("w"),bp::arg("x"),bp::arg("y"),bp::arg("z")),
             "Initialize from coefficients.\n\n"
             "... note:: The order of coefficients is *w*, *x*, *y*, *z*. "
             "The [] operator numbers them differently, 0...4 for *x* *y* *z* *w*!"))
@@ -107,30 +148,61 @@ namespace eigenpy
       
       .def("isApprox",
            &call<Quaternion>::isApprox,
-           isApproxQuaternion_overload(bp::args("other","prec"),
+           isApproxQuaternion_overload(bp::args("self","other","prec"),
                                        "Returns true if *this is approximately equal to other, within the precision determined by prec."))
       
       /* --- Methods --- */
       .def("coeffs",(const Vector4 & (Quaternion::*)()const)&Quaternion::coeffs,
-           bp::return_value_policy<bp::copy_const_reference>())
-      .def("matrix",&Quaternion::matrix,"Returns an equivalent 3x3 rotation matrix. Similar to toRotationMatrix.")
-      .def("toRotationMatrix",&Quaternion::toRotationMatrix,"Returns an equivalent 3x3 rotation matrix.")
+           bp::arg("self"),
+           "Returns a vector of the coefficients (x,y,z,w)",
+           bp::return_internal_reference<>())
+      .def("matrix",&Quaternion::matrix,
+           bp::arg("self"),
+           "Returns an equivalent 3x3 rotation matrix. Similar to toRotationMatrix.")
+      .def("toRotationMatrix",&Quaternion::toRotationMatrix,
+//           bp::arg("self"), // Bug in Boost.Python
+           "Returns an equivalent 3x3 rotation matrix.")
       
-      .def("setFromTwoVectors",&setFromTwoVectors,((bp::arg("a"),bp::arg("b"))),"Set *this to be the quaternion which transforms a into b through a rotation."
+      .def("setFromTwoVectors",&setFromTwoVectors,((bp::arg("self"),bp::arg("a"),bp::arg("b"))),
+           "Set *this to be the quaternion which transforms a into b through a rotation."
            ,bp::return_self<>())
-      .def("conjugate",&Quaternion::conjugate,"Returns the conjugated quaternion. The conjugate of a quaternion represents the opposite rotation.")
-      .def("inverse",&Quaternion::inverse,"Returns the quaternion describing the inverse rotation.")
-      .def("setIdentity",&Quaternion::setIdentity,bp::return_self<>(),"Set *this to the idendity rotation.")
-      .def("norm",&Quaternion::norm,"Returns the norm of the quaternion's coefficients.")
-      .def("normalize",&Quaternion::normalize,"Normalizes the quaternion *this.")
-      .def("normalized",&Quaternion::normalized,"Returns a normalized copy of *this.")
-      .def("squaredNorm",&Quaternion::squaredNorm,"Returns the squared norm of the quaternion's coefficients.")
-      .def("dot",&Quaternion::template dot<Quaternion>,bp::arg("other"),"Returns the dot product of *this with other"
+      .def("conjugate",&Quaternion::conjugate,
+           bp::arg("self"),
+           "Returns the conjugated quaternion.\n"
+           "The conjugate of a quaternion represents the opposite rotation.")
+      .def("inverse",&Quaternion::inverse,
+           bp::arg("self"),
+           "Returns the quaternion describing the inverse rotation.")
+      .def("setIdentity",&Quaternion::setIdentity,
+           bp::arg("self"),
+           "Set *this to the idendity rotation.",bp::return_self<>())
+      .def("norm",&Quaternion::norm,
+           bp::arg("self"),
+           "Returns the norm of the quaternion's coefficients.")
+      .def("normalize",&Quaternion::normalize,
+           bp::arg("self"),
+           "Normalizes the quaternion *this.")
+      .def("normalized",&Quaternion::normalized,
+           bp::arg("self"),
+           "Returns a normalized copy of *this.")
+      .def("squaredNorm",&Quaternion::squaredNorm,
+           bp::arg("self"),
+           "Returns the squared norm of the quaternion's coefficients.")
+      .def("dot",&Quaternion::template dot<Quaternion>,
+           (bp::arg("self"),bp::arg("other")),
+           "Returns the dot product of *this with an other Quaternion.\n"
            "Geometrically speaking, the dot product of two unit quaternions corresponds to the cosine of half the angle between the two rotations.")
-      .def("_transformVector",&Quaternion::_transformVector,bp::arg("vector"),"Rotation of a vector by a quaternion.")
-      .def("vec",&vec,"Returns a vector expression of the imaginary part (x,y,z).")
-      .def("angularDistance",&Quaternion::template angularDistance<Quaternion>,"Returns the angle (in radian) between two rotations.")
-      .def("slerp",&slerp,bp::args("t","other"),
+      .def("_transformVector",&Quaternion::_transformVector,
+           (bp::arg("self"),bp::arg("vector")),
+           "Rotation of a vector by a quaternion.")
+      .def("vec",&vec,
+           bp::arg("self"),
+           "Returns a vector expression of the imaginary part (x,y,z).")
+      .def("angularDistance",
+//           (bp::arg("self"),bp::arg("other")), // Bug in Boost.Python
+           &Quaternion::template angularDistance<Quaternion>,
+           "Returns the angle (in radian) between two rotations.")
+      .def("slerp",&slerp,bp::args("self","t","other"),
            "Returns the spherical linear interpolation between the two quaternions *this and other at the parameter t in [0;1].")
 
       /* --- Operators --- */
@@ -144,9 +216,13 @@ namespace eigenpy
       .def("__setitem__",&QuaternionVisitor::__setitem__)
       .def("__getitem__",&QuaternionVisitor::__getitem__)
       .def("assign",&assign<Quaternion>,
-           bp::arg("quat"),"Set *this from an quaternion quat and returns a reference to *this.",bp::return_self<>())
+           bp::args("self","quat"),
+           "Set *this from an quaternion quat and returns a reference to *this.",
+           bp::return_self<>())
       .def("assign",(Quaternion & (Quaternion::*)(const AngleAxis &))&Quaternion::operator=,
-           bp::arg("aa"),"Set *this from an angle-axis aa and returns a reference to *this.",bp::return_self<>())
+           bp::args("self","aa"),
+           "Set *this from an angle-axis aa and returns a reference to *this.",
+           bp::return_self<>())
       .def("__str__",&print)
       .def("__repr__",&print)
       
@@ -158,7 +234,8 @@ namespace eigenpy
            "Returns the quaternion which transforms a into b through a rotation.",
            bp::return_value_policy<bp::manage_new_object>())
       .staticmethod("FromTwoVectors")
-      .def("Identity",&Quaternion::Identity,"Returns a quaternion representing an identity rotation.")
+      .def("Identity",&Quaternion::Identity,
+           "Returns a quaternion representing an identity rotation.")
       .staticmethod("Identity")
       ;
     }
@@ -178,9 +255,9 @@ namespace eigenpy
     { return self = quat; }
 
     static Quaternion* FromTwoVectors(const Vector3& u, const Vector3& v)
-    { 
+    {
       Quaternion* q(new Quaternion); q->setFromTwoVectors(u,v);
-      return q; 
+      return q;
     }
   
     static bool __eq__(const Quaternion & u, const Quaternion & v)
@@ -232,9 +309,11 @@ namespace eigenpy
                              "'q*v' (rotating 'v' by 'q'), "
                              "'q==q', 'q!=q', 'q[0..3]'.",
                              bp::no_init)
-      .def(QuaternionVisitor<Quaternion>())
-      ;
-   
+      .def(QuaternionVisitor<Quaternion>());
+      
+      // Cast to Eigen::QuaternionBase and vice-versa
+      bp::implicitly_convertible<Quaternion,QuaternionBase >();
+//      bp::implicitly_convertible<QuaternionBase,Quaternion >();
     }
 
   };
