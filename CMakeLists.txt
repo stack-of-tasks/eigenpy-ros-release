@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2014-2019 CNRS
-# Copyright (c) 2018-2019 INRIA
+# Copyright (c) 2018-2020 INRIA
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
@@ -8,6 +8,9 @@ CMAKE_MINIMUM_REQUIRED(VERSION 2.6)
 SET(PROJECT_NAME eigenpy)
 SET(PROJECT_DESCRIPTION "Bindings between Numpy and Eigen using Boost.Python")
 SET(PROJECT_URL "http://github.com/stack-of-tasks/eigenpy")
+SET(PROJECT_USE_CMAKE_EXPORT TRUE)
+SET(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
+SET(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 
 # Check if the submodule cmake have been initialized
 IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
@@ -19,16 +22,8 @@ SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
 INCLUDE(cmake/base.cmake)
-IF(CMAKE_VERSION VERSION_GREATER "3.0.0")
-  CMAKE_POLICY(SET CMP0048 NEW)
-  IF(CMAKE_VERSION VERSION_GREATER "3.9.0")
-    PROJECT(${PROJECT_NAME} VERSION ${PROJECT_VERSION_FULL} LANGUAGES CXX DESCRIPTION ${PROJECT_DESCRIPTION})
-  ELSE(CMAKE_VERSION VERSION_GREATER "3.9.0")
-    PROJECT(${PROJECT_NAME} VERSION ${PROJECT_VERSION_FULL} LANGUAGES CXX)
-  ENDIF(CMAKE_VERSION VERSION_GREATER "3.9.0")
-ELSE(CMAKE_VERSION VERSION_GREATER "3.0.0")
-  PROJECT(${PROJECT_NAME} CXX)
-ENDIF(CMAKE_VERSION VERSION_GREATER "3.0.0")
+COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
+PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
 
 INCLUDE(cmake/boost.cmake)
 INCLUDE(cmake/python.cmake)
@@ -50,19 +45,20 @@ ENDIF(WIN32)
 # --- OPTIONS  ---------------------------------------
 # ----------------------------------------------------
 OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" FALSE)
-OPTION(BUILD_UNIT_TESTS "Build the unitary tests" OFF)
 
-IF(BUILD_UNIT_TESTS)
-  SET(BUILD_TESTING ON)
-ELSE(BUILD_UNIT_TESTS)
-  SET(BUILD_TESTING OFF) 
-ENDIF(BUILD_UNIT_TESTS)
+IF(DEFINED BUILD_UNIT_TESTS)
+  MESSAGE(AUTHOR_WARNING "BUILD_UNIT_TESTS is deprecated. Use BUILD_TESTING instead.\
+    If you are manually building Pinocchio from source in an existing build folder,\
+    we suggest that you delete your build folder and make a new one.")
+  SET(BUILD_TESTING ${BUILD_UNIT_TESTS})
+ENDIF(DEFINED BUILD_UNIT_TESTS)
 
 FINDPYTHON()
-
-INCLUDE_DIRECTORIES(SYSTEM ${PYTHON_INCLUDE_DIRS})
 FIND_NUMPY()
-INCLUDE_DIRECTORIES(SYSTEM ${NUMPY_INCLUDE_DIRS})
+
+IF(WIN32)
+  LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+ENDIF(WIN32)
 
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
@@ -71,12 +67,16 @@ ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
 
 SET(BOOST_COMPONENTS python)
 SEARCH_FOR_BOOST()
-# Add Boost path to include directories.
-INCLUDE_DIRECTORIES(SYSTEM ${Boost_INCLUDE_DIRS})
 
 # ----------------------------------------------------
 # --- INCLUDE ----------------------------------------
 # ----------------------------------------------------
+SET(${PROJECT_NAME}_UTILS_HEADERS
+  include/eigenpy/utils/scalar-name.hpp
+  include/eigenpy/utils/is-approx.hpp
+  include/eigenpy/utils/is-aligned.hpp
+  )
+
 SET(${PROJECT_NAME}_SOLVERS_HEADERS
   include/eigenpy/solvers/solvers.hpp
   include/eigenpy/solvers/preconditioners.hpp
@@ -88,29 +88,46 @@ SET(${PROJECT_NAME}_SOLVERS_HEADERS
   include/eigenpy/solvers/BFGSPreconditioners.hpp
   )
 
+SET(${PROJECT_NAME}_DECOMPOSITIONS_HEADERS
+  include/eigenpy/decompositions/decompositions.hpp
+  include/eigenpy/decompositions/EigenSolver.hpp
+  include/eigenpy/decompositions/LDLT.hpp
+  include/eigenpy/decompositions/LLT.hpp
+  include/eigenpy/decompositions/SelfAdjointEigenSolver.hpp
+  )
+
 SET(${PROJECT_NAME}_HEADERS
+  ${${PROJECT_NAME}_UTILS_HEADERS}
   ${${PROJECT_NAME}_SOLVERS_HEADERS}
+  ${${PROJECT_NAME}_DECOMPOSITIONS_HEADERS}
+  include/eigenpy/computation-info.hpp
   include/eigenpy/eigenpy.hpp
   include/eigenpy/exception.hpp
+  include/eigenpy/scalar-conversion.hpp
   include/eigenpy/expose.hpp
   include/eigenpy/details.hpp
   include/eigenpy/fwd.hpp
-  include/eigenpy/map.hpp
+  include/eigenpy/eigen-allocator.hpp
+  include/eigenpy/eigen-to-python.hpp
+  include/eigenpy/eigen-from-python.hpp
+  include/eigenpy/numpy-map.hpp
   include/eigenpy/geometry.hpp
   include/eigenpy/geometry-conversion.hpp
   include/eigenpy/memory.hpp
+  include/eigenpy/numpy.hpp
+  include/eigenpy/numpy-allocator.hpp
+  include/eigenpy/numpy-type.hpp
   include/eigenpy/registration.hpp
   include/eigenpy/angle-axis.hpp
   include/eigenpy/quaternion.hpp
   include/eigenpy/stride.hpp
-  include/eigenpy/ref.hpp
-  include/eigenpy/details/rvalue_from_python_data.hpp
+  include/eigenpy/version.hpp
 )
 
-INCLUDE_DIRECTORIES(${${PROJECT_NAME}_BINARY_DIR}/include)
-INCLUDE_DIRECTORIES(${${PROJECT_NAME}_SOURCE_DIR}/include)
-
-LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+LIST(APPEND ${PROJECT_NAME}_HEADERS
+  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/config.hpp
+  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/deprecated.hpp
+  ${${PROJECT_NAME}_BINARY_DIR}/include/${PROJECT_NAME}/warning.hpp)
 
 # ----------------------------------------------------
 # --- TARGETS ----------------------------------------
@@ -120,27 +137,51 @@ SET(${PROJECT_NAME}_SOLVERS_SOURCES
   src/solvers/solvers.cpp
   )
 
+SET(${PROJECT_NAME}_DECOMPOSITIONS_SOURCES
+  src/decompositions/decompositions.cpp
+  )
+  
 SET(${PROJECT_NAME}_SOURCES
   ${${PROJECT_NAME}_SOLVERS_SOURCES}
+  ${${PROJECT_NAME}_DECOMPOSITIONS_SOURCES}
   src/exception.cpp
   src/eigenpy.cpp
+  src/numpy.cpp
+  src/matrix-float.cpp
+  src/matrix-complex-float.cpp
+  src/matrix-complex-double.cpp
+  src/matrix-double.cpp
+  src/matrix-long-double.cpp
+  src/matrix-complex-long-double.cpp
+  src/matrix-int.cpp
+  src/matrix-long.cpp
   src/angle-axis.cpp
   src/quaternion.cpp
   src/geometry-conversion.cpp
+  src/version.cpp
 )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} 
+  SYSTEM PUBLIC 
+  ${Boost_INCLUDE_DIRS} 
+  ${EIGEN3_INCLUDE_DIRS} 
+  ${PYTHON_INCLUDE_DIRS} 
+  ${NUMPY_INCLUDE_DIRS}
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
+
 IF(NOT WIN32)
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj> "-Wno-conversion")
 ELSE()
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj>)
 ENDIF()
 
-TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME})
+TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME} PUBLIC)
 PKG_CONFIG_USE_DEPENDENCY(${PROJECT_NAME} eigen3)
 INSTALL(TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
-  PUBLIC_HEADER
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
   LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
   ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
@@ -149,18 +190,7 @@ INSTALL(TARGETS ${PROJECT_NAME}
 ADD_HEADER_GROUP(${PROJECT_NAME}_HEADERS)
 ADD_SOURCE_GROUP(${PROJECT_NAME}_SOURCES)
 
-INCLUDE(GenerateExportHeader)
-GENERATE_EXPORT_HEADER(${PROJECT_NAME} EXPORT_FILE_NAME eigenpy/${PROJECT_NAME}_export.h)
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} INTERFACE "$<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}>")
-SET(PUBLIC_HEADER ${${PROJECT_NAME}_HEADERS})
-
-INSTALL(FILES
-  ${CMAKE_CURRENT_BINARY_DIR}/eigenpy/${PROJECT_NAME}_export.h
-  DESTINATION include/eigenpy)
-
-# This is a temporary work-around to fix MoveIt until jrl-cmakemodules
-# can correctly create non-target CMake configs
-install(FILES eigenpyConfig.cmake DESTINATION share/eigenpy/cmake)
+# Install package for ROS
 install(FILES package.xml DESTINATION share/eigenpy)
 
 # ----------------------------------------------------
