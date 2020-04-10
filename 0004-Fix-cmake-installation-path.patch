@@ -1,22 +1,22 @@
-From cc3c430dfaad927815e35e2050ab045a3902544f Mon Sep 17 00:00:00 2001
+From 6417fd000538039648db995cc34246900542f733 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
-Date: Thu, 9 Apr 2020 17:24:43 +0100
-Subject: [PATCH 3/4] Set CONFIG_INSTALL_DIR to share/cmake/eigenpy
+Date: Fri, 10 Apr 2020 09:39:57 +0100
+Subject: [PATCH 4/4] Fix cmake installation path
 
 ---
  cmake/package-config.cmake | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index bf000f1..cf7606f 100644
+index cf7606f..577086a 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
  #   * <prefix>/lib/cmake/<PROJECT-NAME>
  #   * <prefix>/lib/
  #   * <prefix>/include/
--set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
-+set(CONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
+-set(CONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
++set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
  set(INCLUDE_INSTALL_DIR "include")
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
@@ -24,8 +24,8 @@ index bf000f1..cf7606f 100644
  #   * <prefix>/lib/cmake/<PROJECT-NAME>
  #   * <prefix>/lib/
  #   * <prefix>/include/
--set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
-+set(CONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
+-set(CONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
++set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
  set(INCLUDE_INSTALL_DIR "include")
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
