@@ -1,4 +1,4 @@
-From 7b85c68a8f7edf9070c10b919c2072c332783848 Mon Sep 17 00:00:00 2001
+From b398dfbce1ee0c6364f7d60dbe02ee1b707956b1 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 13:52:47 +0100
 Subject: [PATCH 3/3] Patch: Set CONFIG_INSTALL_DIR to
