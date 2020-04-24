@@ -39,6 +39,9 @@ set(CMAKE_VERBOSE_MAKEFILE True)
 if(NOT DEFINED CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Release)
 endif()
+if(NOT DEFINED PYTHON_EXECUTABLE)
+  set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
+endif()
 
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
