@@ -1,3 +1,26 @@
+## eigenpy (noetic) - 2.3.2-2
+
+The packages in the `eigenpy` repository were released into the `noetic` distro by running `/home/wxm/.local/bin/bloom-release -r noetic eigenpy` on `Fri, 24 Apr 2020 14:31:04 -0000`
+
+The `eigenpy` package was released.
+
+Version of package(s) in repository `eigenpy`:
+
+- upstream repository: https://github.com/stack-of-tasks/eigenpy.git
+- release repository: https://github.com/ipab-slmc/eigenpy_catkin-release.git
+- rosdistro version: `2.3.2-1`
+- old version: `2.3.2-1`
+- new version: `2.3.2-2`
+
+Versions of tools used:
+
+- bloom version: `0.9.3`
+- catkin_pkg version: `0.4.16`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.0`
+- vcstools version: `0.1.42`
+
+
 ## eigenpy (noetic) - 2.3.2-1
 
 The packages in the `eigenpy` repository were released into the `noetic` distro by running `/home/wxm/.local/bin/bloom-release -r noetic eigenpy` on `Thu, 23 Apr 2020 21:21:56 -0000`
