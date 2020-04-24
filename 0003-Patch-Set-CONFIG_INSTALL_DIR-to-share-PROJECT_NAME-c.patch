@@ -1,7 +1,7 @@
-From cdbaed0c8c53b8920c595f1ad4543140fded7d34 Mon Sep 17 00:00:00 2001
+From b6e947cce819c56a052edc7114e3a046df9b606a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 13:52:47 +0100
-Subject: [PATCH 3/3] Patch: Set CONFIG_INSTALL_DIR to
+Subject: [PATCH 3/4] Patch: Set CONFIG_INSTALL_DIR to
  share/${PROJECT_NAME}/cmake
 
 ---
