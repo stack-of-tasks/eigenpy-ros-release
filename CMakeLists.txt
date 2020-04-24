@@ -32,6 +32,8 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
 endif()
 
 set(CMAKE_BUILD_TYPE "Release")
+set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
+
 
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
