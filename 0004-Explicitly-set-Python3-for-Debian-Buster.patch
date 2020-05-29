@@ -1,7 +1,7 @@
-From 54c5cab596232982100706ade1b07989e9028213 Mon Sep 17 00:00:00 2001
+From d9c7d13d97a41c2f7b7092da362bc1d161f502ff Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 24 Apr 2020 15:29:32 +0100
-Subject: [PATCH 4/4] Explicitly set Python3 for Debian Buster
+Subject: [PATCH 4/5] Explicitly set Python3 for Debian Buster
 
 ---
  CMakeLists.txt | 2 ++

@@ -1,7 +1,7 @@
-From cdc3ef0849af37af2feb5334ab745f42cb9baae7 Mon Sep 17 00:00:00 2001
+From c370c474a5193ab2caf6229d27deed355232897f Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:31 +0100
-Subject: [PATCH 2/4] Patch: Install config to share/cmake
+Subject: [PATCH 2/5] Patch: Install config to share/cmake
 
 ---
  cmake/package-config.cmake | 2 +-
