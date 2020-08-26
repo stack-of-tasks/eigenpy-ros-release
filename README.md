@@ -1,3 +1,26 @@
+## eigenpy (eloquent) - 2.5.0-2
+
+The packages in the `eigenpy` repository were released into the `eloquent` distro by running `/home/wxm/.local/bin/bloom-release -r eloquent eigenpy` on `Wed, 26 Aug 2020 13:40:36 -0000`
+
+The `eigenpy` package was released.
+
+Version of package(s) in repository `eigenpy`:
+
+- upstream repository: https://github.com/stack-of-tasks/eigenpy.git
+- release repository: unknown
+- rosdistro version: `null`
+- old version: `2.5.0-1`
+- new version: `2.5.0-2`
+
+Versions of tools used:
+
+- bloom version: `0.9.8`
+- catkin_pkg version: `0.4.22`
+- rosdep version: `0.19.0`
+- rosdistro version: `0.8.2`
+- vcstools version: `0.1.42`
+
+
 ## eigenpy (eloquent) - 2.5.0-1
 
 The packages in the `eigenpy` repository were released into the `eloquent` distro by running `/home/wxm/.local/bin/bloom-release -r eloquent eigenpy` on `Wed, 26 Aug 2020 13:30:36 -0000`
