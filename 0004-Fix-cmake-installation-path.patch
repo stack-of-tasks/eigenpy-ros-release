@@ -1,4 +1,4 @@
-From 6417fd000538039648db995cc34246900542f733 Mon Sep 17 00:00:00 2001
+From b860e0efea23cc0dea46797ca853511c2918b8a9 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 10 Apr 2020 09:39:57 +0100
 Subject: [PATCH 4/4] Fix cmake installation path

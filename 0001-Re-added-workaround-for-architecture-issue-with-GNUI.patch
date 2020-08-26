@@ -1,4 +1,4 @@
-From 08aa49512aaf96114504b6e860064dba3d2ca8b2 Mon Sep 17 00:00:00 2001
+From b5828c002631e1aeff43c5bc36029d93f569fef0 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 9 Apr 2020 17:20:04 +0100
 Subject: [PATCH 1/4] Re-added workaround for architecture issue with

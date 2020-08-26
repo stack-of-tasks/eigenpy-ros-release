@@ -1,4 +1,4 @@
-From 2a319128562fa443c6415ca864a6ab6f2e5a3d04 Mon Sep 17 00:00:00 2001
+From d476a2b8b59ed5c4cd5d68e2e633493fb907c93a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Thu, 9 Apr 2020 17:23:45 +0100
 Subject: [PATCH 2/4] Set build type to Release
