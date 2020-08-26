@@ -36,6 +36,10 @@ Mref = np.reshape(np.array(range(64),np.double),[8,8])
 Mref_from_base = eigenpy.base(Mref)
 assert( np.array_equal(Mref,Mref_from_base) );
 
+# Test plain function
+Mref_from_plain = eigenpy.plain(Mref)
+assert( np.array_equal(Mref,Mref_from_plain) );
+
 if verbose: print("===> Matrix 8x8")
 M = Mref
 assert( np.array_equal(M,eigenpy.reflex(M,verbose)) );
@@ -126,3 +130,7 @@ assert(mat1x1[0,0] == value)
 vec1x1 = eigenpy.vector1x1(value)
 assert(vec1x1.size == 1)
 assert(vec1x1[0] == value)
+
+# test registration of matrix6
+mat6 = eigenpy.matrix6(0.)
+assert(mat6.size == 36)
