@@ -29,6 +29,11 @@
 #  <file:///usr/share/doc/doxygen/html/config.html>`_ provided by package *doxygen-doc*
 #  or the `online version <http://www.doxygen.nl/manual/config.html>`_.
 #
+#   .. variable:: INSTALL_DOCUMENTATION
+#
+#     whether the documentation should be installed.
+#     Turning this to OFF does not prevent the documentation generation.
+#
 #  .. _Doxygen: http://www.doxygen.nl
 
 #.rst:
@@ -404,6 +409,7 @@ MACRO(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   _set_if_undefined(DOXYGEN_PROJECT_BRIEF        "\"${PROJECT_DESCRIPTION}\"")
   _set_if_undefined(DOXYGEN_STRIP_FROM_PATH      "${PROJECT_SOURCE_DIR}")
   _set_if_undefined(DOXYGEN_STRIP_FROM_INC_PATH  "${PROJECT_SOURCE_DIR}/src ${PROJECT_SOURCE_DIR}/include")
+  _set_if_undefined(DOXYGEN_EXTRACT_ALL          "YES")
   #---------------------------------------------------------------------------
   # Configuration options related to warning and progress messages
   #---------------------------------------------------------------------------
@@ -433,6 +439,7 @@ MACRO(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   #---------------------------------------------------------------------------
   _set_if_undefined(DOXYGEN_GENERATE_LATEX       NO)
   _set_if_undefined(DOXYGEN_LATEX_OUTPUT         doxygen-latex)
+  _set_if_undefined(DOXYGEN_EXTRA_PACKAGES       "amssymb,amsmath")
   #---------------------------------------------------------------------------
   # Configuration options related to the RTF output
   #---------------------------------------------------------------------------
@@ -464,7 +471,7 @@ MACRO(_SETUP_DOXYGEN_DEFAULT_OPTIONS)
   #---------------------------------------------------------------------------
   # Configuration options related to external references
   #---------------------------------------------------------------------------
-
+  _set_if_undefined(DOXYGEN_GENERATE_TAGFILE     "${PROJECT_NAME}.doxytag")
   #---------------------------------------------------------------------------
   # Configuration options related to the dot tool
   #---------------------------------------------------------------------------
@@ -643,8 +650,7 @@ MACRO(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
       # Find doxytag files
       # To ignore this list of tag files, set variable DOXYGEN_TAGFILES
       SET(PKG_REQUIRES ${_PKG_CONFIG_REQUIRES})
-      _ADD_TO_LIST(PKG_REQUIRES "${_PKG_CONFIG_COMPILE_TIME_REQUIRES}" ",")
-      STRING(REPLACE "," ";" PKG_REQUIRES "${PKG_REQUIRES}")
+      LIST(APPEND PKG_REQUIRES ${_PKG_CONFIG_COMPILE_TIME_REQUIRES})
       FOREACH(PKG_CONFIG_STRING ${PKG_REQUIRES})
         _PARSE_PKG_CONFIG_STRING(${PKG_CONFIG_STRING} LIBRARY_NAME PREFIX PKG_CONFIG_STRING_NOSPACE)
         # If DOXYGENDOCDIR is specified, add a doc path.

@@ -9,6 +9,16 @@ C++ Headers
 ===========
 .. cmake-module:: ../../header.cmake
 
+Version
+===========
+.. setmode:: user
+
+.. cmake-module:: ../../version.cmake
+
+Set a minimal C++ standard
+==========================
+.. cmake-module:: ../../cxx-standard.cmake
+
 .. _minimal-working-example:
 
 Minimal working example
