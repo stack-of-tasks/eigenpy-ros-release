@@ -81,6 +81,12 @@ MatrixDerived base(const Eigen::MatrixBase<MatrixDerived> & m)
   return m.derived();
 }
 
+template<typename MatrixDerived>
+MatrixDerived plain(const Eigen::PlainObjectBase<MatrixDerived> & m)
+{
+  return m.derived();
+}
+
 template<typename Scalar>
 Eigen::Matrix<Scalar,6,6> matrix6(const Scalar & value)
 {
@@ -94,8 +100,13 @@ BOOST_PYTHON_MODULE(matrix)
   namespace bp = boost::python;
   eigenpy::enableEigenPy();
 
+  // Square matrix
   typedef Eigen::Matrix<double,6,6> Matrix6;
   eigenpy::enableEigenPySpecific<Matrix6>();
+  
+  // Non-square matrix
+  typedef Eigen::Matrix<double,4,6> Matrix46;
+  eigenpy::enableEigenPySpecific<Matrix46>();
 
   Eigen::MatrixXd (*naturalsXX)(int,int,bool) = naturals;
   Eigen::VectorXd (*naturalsX)(int,bool) = naturals;
@@ -118,6 +129,9 @@ BOOST_PYTHON_MODULE(matrix)
   
   bp::def("base", base<VectorXd>);
   bp::def("base", base<MatrixXd>);
+  
+  bp::def("plain", plain<VectorXd>);
+  bp::def("plain", plain<MatrixXd>);
 
   bp::def("matrix6", matrix6<double>);
 }

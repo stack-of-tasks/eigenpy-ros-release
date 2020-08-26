@@ -41,7 +41,7 @@
 #.rst:
 # .. variable:: PYTHON_SITELIB
 #
-#  Absolute path where Python files will be installed.
+#  Relative path where Python files will be installed.
 
 #.rst:
 # .. variable:: PYTHON_EXT_SUFFIX
@@ -80,7 +80,7 @@ MACRO(FINDPYTHON)
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
         )
-      
+
       STRING(REGEX REPLACE "Python " "" _PYTHON_VERSION ${_PYTHON_VERSION_OUTPUT})
       STRING(REGEX REPLACE "\\." ";" _PYTHON_VERSION ${_PYTHON_VERSION})
       LIST(GET _PYTHON_VERSION 0 _PYTHON_VERSION_MAJOR)
@@ -104,7 +104,7 @@ MACRO(FINDPYTHON)
         SET(_PYTHON_VERSION_MAJOR 2)
       ENDIF(NOT Python2_FOUND)
     ENDIF(PYTHON_EXECUTABLE)
-    
+
     SET(_PYTHON_PREFIX "Python${_PYTHON_VERSION_MAJOR}")
 
     IF(${_PYTHON_PREFIX}_FOUND)
@@ -175,33 +175,35 @@ MACRO(FINDPYTHON)
   MESSAGE(STATUS "PythonLibraryDirs: ${PYTHON_LIBRARY_DIRS}")
   MESSAGE(STATUS "PythonLibVersionString: ${PYTHONLIBS_VERSION_STRING}")
 
-  # Use either site-packages (default) or dist-packages (Debian packages) directory
-  OPTION(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
-  # ref. https://docs.python.org/3/library/site.html
-  OPTION(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" OFF)
+  IF(NOT PYTHON_SITELIB)
+    # Use either site-packages (default) or dist-packages (Debian packages) directory
+    OPTION(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
+    # ref. https://docs.python.org/3/library/site.html
+    OPTION(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" OFF)
 
-  IF(PYTHON_STANDARD_LAYOUT)
-    SET(PYTHON_SITELIB_CMD "import sys, os; print(os.sep.join(['lib', 'python' + sys.version[:3], 'site-packages']))")
-  ELSE(PYTHON_STANDARD_LAYOUT)
-    SET(PYTHON_SITELIB_CMD "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix='', plat_specific=False))")
-  ENDIF(PYTHON_STANDARD_LAYOUT)
+    IF(PYTHON_STANDARD_LAYOUT)
+      SET(PYTHON_SITELIB_CMD "import sys, os; print(os.sep.join(['lib', 'python' + sys.version[:3], 'site-packages']))")
+    ELSE(PYTHON_STANDARD_LAYOUT)
+      SET(PYTHON_SITELIB_CMD "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix='', plat_specific=False))")
+    ENDIF(PYTHON_STANDARD_LAYOUT)
 
-  EXECUTE_PROCESS(
-    COMMAND "${PYTHON_EXECUTABLE}" "-c"
-    "${PYTHON_SITELIB_CMD}"
-    OUTPUT_VARIABLE PYTHON_SITELIB
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET)
+    EXECUTE_PROCESS(
+      COMMAND "${PYTHON_EXECUTABLE}" "-c"
+      "${PYTHON_SITELIB_CMD}"
+      OUTPUT_VARIABLE PYTHON_SITELIB
+      OUTPUT_STRIP_TRAILING_WHITESPACE
+      ERROR_QUIET)
 
-  # Keep compatility with former jrl-cmake-modules versions
-  IF(PYTHON_DEB_LAYOUT)
-    STRING(REPLACE "site-packages" "dist-packages" PYTHON_SITELIB "${PYTHON_SITELIB}")
-  ENDIF(PYTHON_DEB_LAYOUT)
+    # Keep compatility with former jrl-cmake-modules versions
+    IF(PYTHON_DEB_LAYOUT)
+      STRING(REPLACE "site-packages" "dist-packages" PYTHON_SITELIB "${PYTHON_SITELIB}")
+    ENDIF(PYTHON_DEB_LAYOUT)
 
-  # If PYTHON_PACKAGES_DIR is defined, then force the Python packages directory name
-  IF(PYTHON_PACKAGES_DIR)
-    STRING(REGEX REPLACE "(site-packages|dist-packages)" "${PYTHON_PACKAGES_DIR}" PYTHON_SITELIB "${PYTHON_SITELIB}")
-  ENDIF(PYTHON_PACKAGES_DIR)
+    # If PYTHON_PACKAGES_DIR is defined, then force the Python packages directory name
+    IF(PYTHON_PACKAGES_DIR)
+      STRING(REGEX REPLACE "(site-packages|dist-packages)" "${PYTHON_PACKAGES_DIR}" PYTHON_SITELIB "${PYTHON_SITELIB}")
+    ENDIF(PYTHON_PACKAGES_DIR)
+  ENDIF(NOT PYTHON_SITELIB)
 
   MESSAGE(STATUS "Python site lib: ${PYTHON_SITELIB}")
 
@@ -252,11 +254,11 @@ ENDMACRO(FINDPYTHON)
 # .. command:: DYNAMIC_GRAPH_PYTHON_MODULE ( SUBMODULENAME LIBRARYNAME TARGETNAME INSTALL_INIT_PY=1 SOURCE_PYTHON_MODULE=cmake/dynamic_graph/python-module-py.cc)
 #
 #   Add a python submodule to dynamic_graph
-#  
+#
 #   :param SUBMODULENAME: the name of the submodule (can be foo/bar),
-#  
+#
 #   :param LIBRARYNAME:   library to link the submodule with.
-#  
+#
 #   :param TARGETNAME:     name of the target: should be different for several
 #                   calls to the macro.
 #
@@ -265,7 +267,7 @@ ENDMACRO(FINDPYTHON)
 #
 #   :param SOURCE_PYTHON_MODULE: Location of the cpp file for the python module in the package.
 #                   Set to cmake/dynamic_graph/python-module-py.cc by default.
-# 
+#
 #  .. note::
 #    Before calling this macro, set variable NEW_ENTITY_CLASS as
 #    the list of new Entity types that you want to be bound.
@@ -277,7 +279,7 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
   # By default the __init__.py file is installed.
   SET(INSTALL_INIT_PY 1)
   SET(SOURCE_PYTHON_MODULE "cmake/dynamic_graph/python-module-py.cc")
-    
+
   # Check if there is optional parameters.
   set(extra_macro_args ${ARGN})
   list(LENGTH extra_macro_args num_extra_args)
@@ -287,7 +289,7 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
       list(GET extra_macro_args 1 SOURCE_PYTHON_MODULE)
     endif(${num_extra_args} GREATER 1)
   endif(${num_extra_args} GREATER 0)
-  
+
   IF(NOT DEFINED PYTHONLIBS_FOUND)
     FINDPYTHON()
   ELSEIF(NOT ${PYTHONLIBS_FOUND} STREQUAL "TRUE")
@@ -310,10 +312,13 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
   SET_TARGET_PROPERTIES(${PYTHON_MODULE}
     PROPERTIES PREFIX ""
     OUTPUT_NAME dynamic_graph/${SUBMODULENAME}/wrap
+    BUILD_RPATH ${DYNAMIC_GRAPH_PLUGINDIR}
    )
   CMAKE_POLICY(POP)
 
-  TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} "-Wl,--no-as-needed")
+  IF (UNIX AND NOT APPLE)
+    TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} "-Wl,--no-as-needed")
+  ENDIF(UNIX AND NOT APPLE)
   TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} ${LIBRARYNAME} ${PYTHON_LIBRARY})
 
   TARGET_INCLUDE_DIRECTORIES(${PYTHON_MODULE} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
@@ -344,7 +349,7 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
       FILES ${PROJECT_BINARY_DIR}/src/dynamic_graph/${SUBMODULENAME}/__init__.py
       DESTINATION ${PYTHON_INSTALL_DIR}
       )
-    
+
   ENDIF(${INSTALL_INIT_PY} EQUAL 1)
 
 ENDMACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME)
@@ -377,7 +382,7 @@ MACRO(PYTHON_INSTALL_ON_SITE MODULE FILE)
     MESSAGE(FATAL_ERROR "Python has not been found.")
   ENDIF()
 
-  PYTHON_INSTALL("${MODULE}" "${FILE}" "${PYTHON_SITELIB}")
+  PYTHON_INSTALL("${MODULE}" "${FILE}" ${PYTHON_SITELIB})
 
 ENDMACRO()
 
@@ -387,14 +392,16 @@ ENDMACRO()
 # Build a Python file from the source directory in the build directory.
 #
 MACRO(PYTHON_BUILD MODULE FILE)
-
+  # Regex from IsValidTargetName in CMake/Source/cmGeneratorExpression.cxx
+  STRING(REGEX REPLACE "[^A-Za-z0-9_.+-]" "_" compile_pyc "compile_pyc_${CMAKE_CURRENT_SOURCE_DIR}")
+  IF(NOT TARGET ${compile_pyc})
+    ADD_CUSTOM_TARGET(${compile_pyc} ALL)
+  ENDIF()
   FILE(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}")
 
-  # convert "/" to "_"
-  STRING(REGEX REPLACE "/" "_" FILE_TARGET_NAME
-    "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c")
-
-  ADD_CUSTOM_TARGET(${FILE_TARGET_NAME} ALL
+  ADD_CUSTOM_COMMAND(
+    TARGET ${compile_pyc}
+    PRE_BUILD
     COMMAND
     "${PYTHON_EXECUTABLE}"
     "${PROJECT_SOURCE_DIR}/cmake/compile.py"
