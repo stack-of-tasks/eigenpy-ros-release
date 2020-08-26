@@ -45,6 +45,7 @@ ENDIF(WIN32)
 # --- OPTIONS  ---------------------------------------
 # ----------------------------------------------------
 OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" FALSE)
+OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
 IF(DEFINED BUILD_UNIT_TESTS)
   MESSAGE(AUTHOR_WARNING "BUILD_UNIT_TESTS is deprecated. Use BUILD_TESTING instead.\
@@ -63,10 +64,9 @@ ENDIF(WIN32)
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
-ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
+ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
 
-SET(BOOST_COMPONENTS python)
-SEARCH_FOR_BOOST()
+SEARCH_FOR_BOOST_PYTHON()
 
 # ----------------------------------------------------
 # --- INCLUDE ----------------------------------------
@@ -170,11 +170,15 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} 
   SYSTEM PUBLIC 
   ${Boost_INCLUDE_DIRS} 
-  ${EIGEN3_INCLUDE_DIRS} 
+  ${EIGEN3_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS} 
   ${NUMPY_INCLUDE_DIRS}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+IF(SUFFIX_SO_VERSION)
+  SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
+ENDIF(SUFFIX_SO_VERSION)
 
 IF(NOT WIN32)
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj> "-Wno-conversion")
@@ -183,7 +187,6 @@ ELSE()
 ENDIF()
 
 TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME} PUBLIC)
-PKG_CONFIG_USE_DEPENDENCY(${PROJECT_NAME} eigen3)
 INSTALL(TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
