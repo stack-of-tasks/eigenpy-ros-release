@@ -21,9 +21,6 @@ ENDIF()
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
-set(CMAKE_BUILD_TYPE "Release")
-set(CMAKE_INSTALL_LIBDIR "lib/")
-
 INCLUDE(cmake/base.cmake)
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
 PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
@@ -48,6 +45,7 @@ ENDIF(WIN32)
 # --- OPTIONS  ---------------------------------------
 # ----------------------------------------------------
 OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" FALSE)
+OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
 
 IF(DEFINED BUILD_UNIT_TESTS)
   MESSAGE(AUTHOR_WARNING "BUILD_UNIT_TESTS is deprecated. Use BUILD_TESTING instead.\
@@ -66,10 +64,9 @@ ENDIF(WIN32)
 # ----------------------------------------------------
 # --- DEPENDENCIES -----------------------------------
 # ----------------------------------------------------
-ADD_REQUIRED_DEPENDENCY("eigen3 >= 3.0.5")
+ADD_PROJECT_DEPENDENCY(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
 
-SET(BOOST_COMPONENTS python)
-SEARCH_FOR_BOOST()
+SEARCH_FOR_BOOST_PYTHON()
 
 # ----------------------------------------------------
 # --- INCLUDE ----------------------------------------
@@ -123,6 +120,9 @@ SET(${PROJECT_NAME}_HEADERS
   include/eigenpy/registration.hpp
   include/eigenpy/angle-axis.hpp
   include/eigenpy/quaternion.hpp
+  include/eigenpy/user-type.hpp
+  include/eigenpy/ufunc.hpp
+  include/eigenpy/register.hpp
   include/eigenpy/stride.hpp
   include/eigenpy/version.hpp
 )
@@ -150,9 +150,11 @@ SET(${PROJECT_NAME}_SOURCES
   src/exception.cpp
   src/eigenpy.cpp
   src/numpy.cpp
+  src/numpy-type.cpp
   src/matrix-float.cpp
   src/matrix-complex-float.cpp
   src/matrix-complex-double.cpp
+  src/register.cpp
   src/matrix-double.cpp
   src/matrix-long-double.cpp
   src/matrix-complex-long-double.cpp
@@ -168,11 +170,15 @@ ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} 
   SYSTEM PUBLIC 
   ${Boost_INCLUDE_DIRS} 
-  ${EIGEN3_INCLUDE_DIRS} 
+  ${EIGEN3_INCLUDE_DIR}
   ${PYTHON_INCLUDE_DIRS} 
   ${NUMPY_INCLUDE_DIRS}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+IF(SUFFIX_SO_VERSION)
+  SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
+ENDIF(SUFFIX_SO_VERSION)
 
 IF(NOT WIN32)
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj> "-Wno-conversion")
@@ -181,7 +187,6 @@ ELSE()
 ENDIF()
 
 TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME} PUBLIC)
-PKG_CONFIG_USE_DEPENDENCY(${PROJECT_NAME} eigen3)
 INSTALL(TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}

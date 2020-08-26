@@ -9,8 +9,11 @@
 #include "eigenpy/numpy-type.hpp"
 #include "eigenpy/eigen-allocator.hpp"
 
+#include "eigenpy/register.hpp"
+
 namespace eigenpy
 {
+
   template<typename MatType>
   struct NumpyAllocator
   {
@@ -20,8 +23,8 @@ namespace eigenpy
     {
       typedef typename SimilarMatrixType::Scalar Scalar;
       
-      PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_SimpleNew(static_cast<int>(nd), shape,
-                                                                        NumpyEquivalentType<Scalar>::type_code);
+      const int code = Register::getTypeCode<Scalar>();
+      PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_SimpleNew(static_cast<int>(nd), shape, code);
       
       // Copy data
       EigenAllocator<SimilarMatrixType>::copy(mat,pyArray);
@@ -42,8 +45,11 @@ namespace eigenpy
       
       if(NumpyType::sharedMemory())
       {
-        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(static_cast<int>(nd), shape,
-                                                                    NumpyEquivalentType<Scalar>::type_code,
+        const int Scalar_type_code = Register::getTypeCode<Scalar>();
+        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(getPyArrayType(),
+                                                                    static_cast<int>(nd),
+                                                                    shape,
+                                                                    Scalar_type_code,
                                                                     mat.data(),
                                                                     NPY_ARRAY_MEMORY_CONTIGUOUS | NPY_ARRAY_ALIGNED);
         
@@ -51,7 +57,7 @@ namespace eigenpy
       }
       else
       {
-        return NumpyAllocator<MatType>::allocate(mat.derived(),nd,shape);
+        return NumpyAllocator<MatType>::allocate(mat,nd,shape);
       }
     }
   };
@@ -59,8 +65,33 @@ namespace eigenpy
 #if EIGEN_VERSION_AT_LEAST(3,2,0)
 
   template<typename MatType, int Options, typename Stride>
-  struct NumpyAllocator<Eigen::Ref<MatType,Options,Stride> > : NumpyAllocator<MatType &>
+  struct NumpyAllocator<Eigen::Ref<MatType,Options,Stride> >
   {
+    typedef Eigen::Ref<MatType,Options,Stride> RefType;
+    
+    static PyArrayObject * allocate(RefType & mat,
+                                    npy_intp nd, npy_intp * shape)
+    {
+      typedef typename RefType::Scalar Scalar;
+      enum { NPY_ARRAY_MEMORY_CONTIGUOUS = RefType::IsRowMajor ? NPY_ARRAY_CARRAY : NPY_ARRAY_FARRAY };
+      
+      if(NumpyType::sharedMemory())
+      {
+        const int Scalar_type_code = Register::getTypeCode<Scalar>();
+        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(getPyArrayType(),
+                                                                    static_cast<int>(nd),
+                                                                    shape,
+                                                                    Scalar_type_code,
+                                                                    mat.data(),
+                                                                    NPY_ARRAY_MEMORY_CONTIGUOUS | NPY_ARRAY_ALIGNED);
+        
+        return pyArray;
+      }
+      else
+      {
+        return NumpyAllocator<MatType>::allocate(mat,nd,shape);
+      }
+    }
   };
 
 #endif
@@ -77,16 +108,19 @@ namespace eigenpy
       
       if(NumpyType::sharedMemory())
       {
-        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(static_cast<int>(nd), shape,
-                                                                    NumpyEquivalentType<Scalar>::type_code,
-                                                                    const_cast<SimilarMatrixType &>(mat.derived()).data(),
+        const int Scalar_type_code = Register::getTypeCode<Scalar>();
+        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(getPyArrayType(),
+                                                                    static_cast<int>(nd),
+                                                                    shape,
+                                                                    Scalar_type_code,
+                                                                    const_cast<Scalar *>(mat.data()),
                                                                     NPY_ARRAY_MEMORY_CONTIGUOUS_RO | NPY_ARRAY_ALIGNED);
                                                                     
         return pyArray;
       }
       else
       {
-        return NumpyAllocator<MatType>::allocate(mat.derived(),nd,shape);
+        return NumpyAllocator<MatType>::allocate(mat,nd,shape);
       }
     }
   };
@@ -94,8 +128,34 @@ namespace eigenpy
 #if EIGEN_VERSION_AT_LEAST(3,2,0)
 
   template<typename MatType, int Options, typename Stride>
-  struct NumpyAllocator<const Eigen::Ref<const MatType,Options,Stride> > : NumpyAllocator<const MatType &>
+  struct NumpyAllocator<const Eigen::Ref<const MatType,Options,Stride> >
   {
+    typedef const Eigen::Ref<const MatType,Options,Stride> RefType;
+    
+    template<typename SimilarMatrixType>
+    static PyArrayObject * allocate(RefType & mat,
+                                    npy_intp nd, npy_intp * shape)
+    {
+      typedef typename SimilarMatrixType::Scalar Scalar;
+      enum { NPY_ARRAY_MEMORY_CONTIGUOUS_RO = SimilarMatrixType::IsRowMajor ? NPY_ARRAY_CARRAY_RO : NPY_ARRAY_FARRAY_RO };
+      
+      if(NumpyType::sharedMemory())
+      {
+        const int Scalar_type_code = Register::getTypeCode<Scalar>();
+        PyArrayObject * pyArray = (PyArrayObject*) call_PyArray_New(getPyArrayType(),
+                                                                    static_cast<int>(nd),
+                                                                    shape,
+                                                                    Scalar_type_code,
+                                                                    const_cast<Scalar *>(mat.data()),
+                                                                    NPY_ARRAY_MEMORY_CONTIGUOUS_RO | NPY_ARRAY_ALIGNED);
+                                                                    
+        return pyArray;
+      }
+      else
+      {
+        return NumpyAllocator<MatType>::allocate(mat,nd,shape);
+      }
+    }
   };
 
 #endif
