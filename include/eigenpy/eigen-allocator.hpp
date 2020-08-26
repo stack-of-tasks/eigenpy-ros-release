@@ -7,6 +7,7 @@
 
 #include "eigenpy/fwd.hpp"
 #include "eigenpy/numpy-map.hpp"
+#include "eigenpy/register.hpp"
 #include "eigenpy/scalar-conversion.hpp"
 #include "eigenpy/utils/is-aligned.hpp"
 
@@ -65,6 +66,17 @@ namespace eigenpy
         }
       }
     };
+  
+    template<typename MatType>
+    bool check_swap(PyArrayObject * pyArray,
+                    const Eigen::MatrixBase<MatType> & mat)
+    {
+      if(PyArray_NDIM(pyArray) == 0) return false;
+      if(mat.rows() == PyArray_DIMS(pyArray)[0])
+        return false;
+      else
+        return true;
+    }
 
     template<typename Scalar, typename NewScalar, bool cast_is_valid = FromTypeToType<Scalar,NewScalar>::value >
     struct cast_matrix_or_array
@@ -74,10 +86,7 @@ namespace eigenpy
                       const Eigen::MatrixBase<MatrixOut> & dest)
       {
         MatrixOut & dest_ = const_cast<MatrixOut &>(dest.derived());
-        if(dest.rows() == input.rows())
-          dest_ = input.template cast<NewScalar>();
-        else
-          dest_ = input.transpose().template cast<NewScalar>();
+        dest_ = input.template cast<NewScalar>();
       }
     };
 
@@ -96,11 +105,11 @@ namespace eigenpy
   } // namespace details
 
 #define EIGENPY_CAST_FROM_PYARRAY_TO_EIGEN_MATRIX(MatType,Scalar,NewScalar,pyArray,mat) \
-  details::cast_matrix_or_array<Scalar,NewScalar>::run(NumpyMap<MatType,Scalar>::map(pyArray),mat)
+  details::cast_matrix_or_array<Scalar,NewScalar>::run(NumpyMap<MatType,Scalar>::map(pyArray,details::check_swap(pyArray,mat)),mat)
 
 #define EIGENPY_CAST_FROM_EIGEN_MATRIX_TO_PYARRAY(MatType,Scalar,NewScalar,mat,pyArray) \
-  details::cast_matrix_or_array<Scalar,NewScalar>::run(mat,NumpyMap<MatType,NewScalar>::map(pyArray))
-  
+  details::cast_matrix_or_array<Scalar,NewScalar>::run(mat,NumpyMap<MatType,NewScalar>::map(pyArray,details::check_swap(pyArray,mat)))
+
   template<typename MatType>
   struct EigenAllocator
   {
@@ -114,14 +123,15 @@ namespace eigenpy
       Type * mat_ptr = details::init_matrix_or_array<Type>::run(pyArray,raw_ptr);
       Type & mat = *mat_ptr;
       
-      const int pyArray_Type = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
-      if(pyArray_Type == NumpyEquivalentType<Scalar>::type_code)
+      const int pyArray_type_code = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
+      const int Scalar_type_code = Register::getTypeCode<Scalar>();
+      if(pyArray_type_code == Scalar_type_code)
       {
-        mat = NumpyMap<MatType,Scalar>::map(pyArray); // avoid useless cast
+        mat = NumpyMap<MatType,Scalar>::map(pyArray,details::check_swap(pyArray,mat)); // avoid useless cast
         return;
       }
       
-      switch(pyArray_Type)
+      switch(pyArray_type_code)
       {
         case NPY_INT:
           EIGENPY_CAST_FROM_PYARRAY_TO_EIGEN_MATRIX(MatType,int,Scalar,pyArray,mat);
@@ -158,21 +168,19 @@ namespace eigenpy
                      PyArrayObject * pyArray)
     {
       const MatrixDerived & mat = const_cast<const MatrixDerived &>(mat_.derived());
-      const int pyArray_Type = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
+      const int pyArray_type_code = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
+      const int Scalar_type_code = Register::getTypeCode<Scalar>();
       
       typedef typename NumpyMap<MatType,Scalar>::EigenMap MapType;
       
-      if(pyArray_Type == NumpyEquivalentType<Scalar>::type_code) // no cast needed
+      if(pyArray_type_code == Scalar_type_code) // no cast needed
       {
-        MapType map_pyArray = NumpyMap<MatType,Scalar>::map(pyArray);
-        if(mat.rows() == map_pyArray.rows())
-          map_pyArray = mat;
-        else
-          map_pyArray = mat.transpose();
+        MapType map_pyArray = NumpyMap<MatType,Scalar>::map(pyArray,details::check_swap(pyArray,mat));
+        map_pyArray = mat;
         return;
       }
       
-      switch(pyArray_Type)
+      switch(pyArray_type_code)
       {
         case NPY_INT:
           EIGENPY_CAST_FROM_EIGEN_MATRIX_TO_PYARRAY(MatType,Scalar,int,mat,pyArray);
@@ -219,8 +227,9 @@ namespace eigenpy
       typedef typename StrideType<MatType,Eigen::internal::traits<RefType>::StrideType::InnerStrideAtCompileTime, Eigen::internal::traits<RefType>::StrideType::OuterStrideAtCompileTime >::type NumpyMapStride;
 
       bool need_to_allocate = false;
-      const int pyArray_Type = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
-      if(pyArray_Type != NumpyEquivalentType<Scalar>::type_code)
+      const int pyArray_type_code = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
+      const int Scalar_type_code = Register::getTypeCode<Scalar>();
+      if(pyArray_type_code != Scalar_type_code)
         need_to_allocate |= true;
       if(    (MatType::IsRowMajor && (PyArray_IS_C_CONTIGUOUS(pyArray) && !PyArray_IS_F_CONTIGUOUS(pyArray)))
           || (!MatType::IsRowMajor && (PyArray_IS_F_CONTIGUOUS(pyArray) && !PyArray_IS_C_CONTIGUOUS(pyArray)))
@@ -246,13 +255,13 @@ namespace eigenpy
         new (raw_ptr) StorageType(mat_ref,pyArray,mat_ptr);
         
         RefType & mat = *reinterpret_cast<RefType*>(raw_ptr);
-        if(pyArray_Type == NumpyEquivalentType<Scalar>::type_code)
+        if(pyArray_type_code == Scalar_type_code)
         {
-          mat = NumpyMap<MatType,Scalar>::map(pyArray); // avoid useless cast
+          mat = NumpyMap<MatType,Scalar>::map(pyArray,details::check_swap(pyArray,mat)); // avoid useless cast
           return;
         }
         
-        switch(pyArray_Type)
+        switch(pyArray_type_code)
         {
           case NPY_INT:
             EIGENPY_CAST_FROM_PYARRAY_TO_EIGEN_MATRIX(MatType,int,Scalar,pyArray,mat);
@@ -284,7 +293,7 @@ namespace eigenpy
       }
       else
       {
-        assert(pyArray_Type == NumpyEquivalentType<Scalar>::type_code);
+        assert(pyArray_type_code == Scalar_type_code);
         typename NumpyMap<MatType,Scalar,Options,NumpyMapStride>::EigenMap numpyMap = NumpyMap<MatType,Scalar,Options,NumpyMapStride>::map(pyArray);
         RefType mat_ref(numpyMap);
         new (raw_ptr) StorageType(mat_ref,pyArray);
@@ -311,8 +320,10 @@ namespace eigenpy
       typedef typename StrideType<MatType,Eigen::internal::traits<RefType>::StrideType::InnerStrideAtCompileTime, Eigen::internal::traits<RefType>::StrideType::OuterStrideAtCompileTime >::type NumpyMapStride;
 
       bool need_to_allocate = false;
-      const int pyArray_Type = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
-      if(pyArray_Type != NumpyEquivalentType<Scalar>::type_code)
+      const int pyArray_type_code = EIGENPY_GET_PY_ARRAY_TYPE(pyArray);
+      const int Scalar_type_code = Register::getTypeCode<Scalar>();
+      
+      if(pyArray_type_code != Scalar_type_code)
         need_to_allocate |= true;
       if(    (MatType::IsRowMajor && (PyArray_IS_C_CONTIGUOUS(pyArray) && !PyArray_IS_F_CONTIGUOUS(pyArray)))
           || (!MatType::IsRowMajor && (PyArray_IS_F_CONTIGUOUS(pyArray) && !PyArray_IS_C_CONTIGUOUS(pyArray)))
@@ -338,13 +349,13 @@ namespace eigenpy
         new (raw_ptr) StorageType(mat_ref,pyArray,mat_ptr);
         
         MatType & mat = *mat_ptr;
-        if(pyArray_Type == NumpyEquivalentType<Scalar>::type_code)
+        if(pyArray_type_code == Scalar_type_code)
         {
-          mat = NumpyMap<MatType,Scalar>::map(pyArray); // avoid useless cast
+          mat = NumpyMap<MatType,Scalar>::map(pyArray,details::check_swap(pyArray,mat)); // avoid useless cast
           return;
         }
         
-        switch(pyArray_Type)
+        switch(pyArray_type_code)
         {
           case NPY_INT:
             EIGENPY_CAST_FROM_PYARRAY_TO_EIGEN_MATRIX(MatType,int,Scalar,pyArray,mat);
@@ -376,7 +387,7 @@ namespace eigenpy
       }
       else
       {
-        assert(pyArray_Type == NumpyEquivalentType<Scalar>::type_code);
+        assert(pyArray_type_code == Scalar_type_code);
         typename NumpyMap<MatType,Scalar,Options,NumpyMapStride>::EigenMap numpyMap = NumpyMap<MatType,Scalar,Options,NumpyMapStride>::map(pyArray);
         RefType mat_ref(numpyMap);
         new (raw_ptr) StorageType(mat_ref,pyArray);
