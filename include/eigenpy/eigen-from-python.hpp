@@ -173,6 +173,14 @@ namespace boost { namespace python { namespace converter {
     EIGENPY_RVALUE_FROM_PYTHON_DATA_INIT(Derived const &)
   };
 
+  /// \brief Template specialization of rvalue_from_python_data
+  template<typename Derived>
+  struct rvalue_from_python_data<Eigen::PlainObjectBase<Derived> const &>
+  : rvalue_from_python_data_eigen<Derived const &>
+  {
+    EIGENPY_RVALUE_FROM_PYTHON_DATA_INIT(Derived const &)
+  };
+
   template<typename MatType, int Options, typename Stride>
   struct rvalue_from_python_data<Eigen::Ref<MatType,Options,Stride> &>
   : rvalue_from_python_storage<Eigen::Ref<MatType,Options,Stride> &>
@@ -285,7 +293,7 @@ namespace eigenpy
   template<typename MatType>
   void* EigenFromPy<MatType>::convertible(PyArrayObject* pyArray)
   {
-    if(!PyArray_Check(pyArray))
+    if(!call_PyArray_Check(reinterpret_cast<PyObject*>(pyArray)))
       return 0;
     
     if(!np_type_is_convertible_into_scalar<Scalar>(EIGENPY_GET_PY_ARRAY_TYPE(pyArray)))
@@ -425,6 +433,10 @@ namespace eigenpy
       typedef Eigen::EigenBase<MatType> EigenBase;
       EigenFromPy<EigenBase>::registration();
 
+      // Add conversion to Eigen::PlainObjectBase<MatType>
+      typedef Eigen::PlainObjectBase<MatType> PlainObjectBase;
+      EigenFromPy<PlainObjectBase>::registration();
+
 #if EIGEN_VERSION_AT_LEAST(3,2,0)
       // Add conversion to Eigen::Ref<MatType>
       typedef Eigen::Ref<MatType> RefType;
@@ -464,6 +476,20 @@ namespace eigenpy
        &EigenFromPy::construct,bp::type_id<Base>());
     }
   };
+    
+  template<typename MatType>
+  struct EigenFromPy< Eigen::PlainObjectBase<MatType> > : EigenFromPy<MatType>
+  {
+    typedef EigenFromPy<MatType> EigenFromPyDerived;
+    typedef Eigen::PlainObjectBase<MatType> Base;
+
+    static void registration()
+    {
+      bp::converter::registry::push_back
+      (reinterpret_cast<void *(*)(_object *)>(&EigenFromPy::convertible),
+       &EigenFromPy::construct,bp::type_id<Base>());
+    }
+  };
 
 #if EIGEN_VERSION_AT_LEAST(3,2,0)
 
@@ -476,7 +502,7 @@ namespace eigenpy
     /// \brief Determine if pyObj can be converted into a MatType object
     static void* convertible(PyArrayObject * pyArray)
     {
-      if(!PyArray_Check(pyArray))
+      if(!call_PyArray_Check(reinterpret_cast<PyObject*>(pyArray)))
         return 0;
       if(!PyArray_ISWRITEABLE(pyArray))
         return 0;
