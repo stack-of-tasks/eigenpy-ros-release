@@ -17,10 +17,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
 ENDIF()
 
-set(CMAKE_BUILD_TYPE "Release")
-set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
-set(CMAKE_INSTALL_LIBDIR "lib/")
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
