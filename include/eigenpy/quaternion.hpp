@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2020 CNRS INRIA
+ * Copyright 2014-2021 CNRS INRIA
  */
 
 #ifndef __eigenpy_quaternion_hpp__
@@ -88,8 +88,6 @@ namespace eigenpy
     }
   };
 
-  BOOST_PYTHON_FUNCTION_OVERLOADS(isApproxQuaternion_overload,call<Eigen::Quaterniond>::isApprox,2,3)
-
   template<typename Quaternion>
   class QuaternionVisitor
   :  public bp::def_visitor< QuaternionVisitor<Quaternion> >
@@ -103,6 +101,8 @@ namespace eigenpy
     typedef typename QuaternionBase::Matrix3 Matrix3;
 
     typedef typename QuaternionBase::AngleAxisType AngleAxis;
+    
+    BOOST_PYTHON_FUNCTION_OVERLOADS(isApproxQuaternion_overload,call<Quaternion>::isApprox,2,3)
 
   public:
 
@@ -111,12 +111,12 @@ namespace eigenpy
     {
       cl
       .def(bp::init<>(bp::arg("self"),"Default constructor"))
-      .def(bp::init<Vector4>((bp::arg("self"),bp::arg("vec4")),
-                             "Initialize from a vector 4D.\n"
-                             "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw."))
       .def(bp::init<Matrix3>((bp::arg("self"),bp::arg("R")),
                              "Initialize from rotation matrix.\n"
                              "\tR : a rotation matrix 3x3."))
+      .def(bp::init<Vector4>((bp::arg("self"),bp::arg("vec4")),
+                             "Initialize from a vector 4D.\n"
+                             "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw."))
       .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("aa")),
                                "Initialize from an angle axis.\n"
                                "\taa: angle axis object."))
