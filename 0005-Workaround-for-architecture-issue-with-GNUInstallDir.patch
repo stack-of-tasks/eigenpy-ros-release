@@ -1,4 +1,4 @@
-From d3236d2f67fe08b9b925e7da2305800c331145a4 Mon Sep 17 00:00:00 2001
+From 1402aee263720324697da81014d76df7fdc8fcf2 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 29 May 2020 11:47:27 +0100
 Subject: [PATCH 5/5] Workaround for architecture issue with GNUInstallDirs
@@ -8,7 +8,7 @@ Subject: [PATCH 5/5] Workaround for architecture issue with GNUInstallDirs
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 78b981b..f079a75 100644
+index 75fef39..f207a9c 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -19,7 +19,7 @@ ENDIF()
@@ -21,5 +21,5 @@ index 78b981b..f079a75 100644
  # Disable -Werror on Unix for now.
  SET(CXX_DISABLE_WERROR True)
 -- 
-2.17.1
+2.25.1
 
