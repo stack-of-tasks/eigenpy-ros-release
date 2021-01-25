@@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -115,7 +115,7 @@ MACRO(SETUP_PROJECT_PACKAGE_FINALIZE)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -171,7 +171,7 @@ else()
 endif()
 
 configure_package_config_file(
-    "cmake/Config.cmake.in"
+    "${PROJECT_JRL_CMAKE_MODULE_DIR}/Config.cmake.in"
     "${PROJECT_CONFIG}"
     INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
 )
@@ -229,7 +229,7 @@ macro(PROJECT_INSTALL_COMPONENT COMPONENT)
   set(COMPONENT_EXTRA_MACRO "${PARSED_ARGN_EXTRA_MACRO}")
   include(CMakePackageConfigHelpers)
   configure_package_config_file(
-      "${CMAKE_SOURCE_DIR}/cmake/componentConfig.cmake.in"
+      "${PROJECT_JRL_CMAKE_MODULE_DIR}/componentConfig.cmake.in"
       "${COMPONENT_CONFIG}"
       INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
       NO_CHECK_REQUIRED_COMPONENTS_MACRO
