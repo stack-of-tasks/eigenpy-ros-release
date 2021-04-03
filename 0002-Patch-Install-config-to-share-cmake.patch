@@ -1,4 +1,4 @@
-From 595388fe06c67657376e4881aa21e6dfe8135677 Mon Sep 17 00:00:00 2001
+From 8501cdef77e69b93bae55312dddb2d8f509eed46 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:31 +0100
 Subject: [PATCH 2/3] Patch: Install config to share/cmake
@@ -8,7 +8,7 @@ Subject: [PATCH 2/3] Patch: Install config to share/cmake
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index bf000f1..2865b79 100644
+index 76946e5..d029103 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
@@ -21,5 +21,5 @@ index bf000f1..2865b79 100644
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
 -- 
-2.17.1
+2.25.1
 
