@@ -1,4 +1,4 @@
-From 9638f1324ce1b2744f440f1a89df7feb8d7b4a1e Mon Sep 17 00:00:00 2001
+From 3630233f19bb23e17055b8adb511ba61938b9756 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 29 May 2020 11:47:27 +0100
 Subject: [PATCH 5/6] Workaround for architecture issue with GNUInstallDirs
