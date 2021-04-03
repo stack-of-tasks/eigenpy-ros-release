@@ -32,25 +32,33 @@ FUNCTION(SEARCH_FOR_BOOST_COMPONENT boost_python_name found)
 ENDFUNCTION(SEARCH_FOR_BOOST_COMPONENT boost_python_name found)
 
 IF(CMAKE_VERSION VERSION_LESS "3.12")
-  SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/boost ${CMAKE_MODULE_PATH})
+  SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/boost ${CMAKE_MODULE_PATH})
   MESSAGE(STATUS "CMake versions older than 3.12 may warn when looking to Boost components. Custom macros are used to find it.")
 ENDIF(CMAKE_VERSION VERSION_LESS "3.12")
 
 #.rst:
-# .. variable:: BOOST_COMPONENTS
+# .. command:: SET_BOOST_DEFAULT_OPTIONS
 #
-# This variable is *deprecated*. See :cmake:command:`SEARCH_FOR_BOOST` for more info.
+#  This function allows to set up the default options for detecting Boost components.
+# 
+MACRO(SET_BOOST_DEFAULT_OPTIONS)
+  SET(Boost_USE_STATIC_LIBS OFF)
+  SET(Boost_USE_MULTITHREADED ON)
+  SET(Boost_NO_BOOST_CMAKE ON) 
+ENDMACRO(SET_BOOST_DEFAULT_OPTIONS)
+
+#.rst:
+# .. command:: EXPORT_BOOST_DEFAULT_OPTIONS
 #
-#  Controls the components to be detected by the deprecated macro :cmake:command:`SEARCH_FOR_BOOST`.
-#  If this variable is not defined, it defaults to the following component
-#  list:
+#  This function allows to export the default options for detecting Boost components.
+# 
+MACRO(EXPORT_BOOST_DEFAULT_OPTIONS)
+  LIST(INSERT _PACKAGE_CONFIG_DEPENDENCIES_FIND_PACKAGE 0 "SET(Boost_USE_STATIC_LIBS OFF);SET(Boost_USE_MULTITHREADED ON);SET(Boost_NO_BOOST_CMAKE ON)")
+  LIST(INSERT _PACKAGE_CONFIG_DEPENDENCIES_FIND_DEPENDENCY 0 "SET(Boost_USE_STATIC_LIBS OFF);SET(Boost_USE_MULTITHREADED ON);SET(Boost_NO_BOOST_CMAKE ON)")
+ENDMACRO(EXPORT_BOOST_DEFAULT_OPTIONS)
+
 #
-#  - Filesystem
-#  - Program_options
-#  - System
-#  - Thread
-#  - Unit_test_framework
-#
+#.rst
 # .. command:: SEARCH_FOR_BOOST_PYTHON([REQUIRED])
 #
 #  Find boost-python component.
@@ -68,18 +76,7 @@ MACRO(SEARCH_FOR_BOOST_PYTHON)
     SET(BOOST_PYTHON_REQUIRED REQUIRED)
   ENDIF(_BOOST_PYTHON_REQUIRED)
 
-  IF(NOT Boost_FOUND)
-    # Set Boost default settings
-    # First try to find Boost to get the version
-    FIND_PACKAGE(Boost ${BOOST_PYTHON_REQUIRED})
-    STRING(REPLACE "_" "." Boost_SHORT_VERSION ${Boost_LIB_VERSION})
-    SET(Boost_USE_STATIC_LIBS OFF)
-    SET(Boost_USE_MULTITHREADED ON)
-    IF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
-      SET(BUILD_SHARED_LIBS ON) 
-      SET(Boost_NO_BOOST_CMAKE ON) 
-    ENDIF("${Boost_SHORT_VERSION}" VERSION_GREATER "1.70" OR "${Boost_SHORT_VERSION}" VERSION_EQUAL "1.70")
-  ENDIF(NOT Boost_FOUND)
+  SET_BOOST_DEFAULT_OPTIONS()
 
   IF(NOT PYTHONLIBS_FOUND)
     MESSAGE(FATAL_ERROR "Python has not been found. You should first call FindPython before calling SEARCH_FOR_BOOST_PYTHON macro.")
