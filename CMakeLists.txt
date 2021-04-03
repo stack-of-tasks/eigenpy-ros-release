@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2014-2019 CNRS
-# Copyright (c) 2018-2020 INRIA
+# Copyright (c) 2018-2021 INRIA
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
@@ -16,10 +16,6 @@ SET(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
 IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
 ENDIF()
-
-set(CMAKE_BUILD_TYPE "Release")
-set(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-set(CMAKE_INSTALL_LIBDIR "lib/")
 
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
@@ -167,6 +163,7 @@ SET(${PROJECT_NAME}_SOURCES
   src/matrix-double.cpp
   src/matrix-long-double.cpp
   src/matrix-complex-long-double.cpp
+  src/matrix-bool.cpp
   src/matrix-int.cpp
   src/matrix-long.cpp
   src/angle-axis.cpp
