@@ -1,4 +1,4 @@
-From 3630233f19bb23e17055b8adb511ba61938b9756 Mon Sep 17 00:00:00 2001
+From 53f441a89d7704986a253cfdea1338d205e489a7 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 29 May 2020 11:47:27 +0100
 Subject: [PATCH 5/6] Workaround for architecture issue with GNUInstallDirs
@@ -8,7 +8,7 @@ Subject: [PATCH 5/6] Workaround for architecture issue with GNUInstallDirs
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8ddc696..2931027 100644
+index 6b9f375..863e8f4 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -19,7 +19,7 @@ ENDIF()
