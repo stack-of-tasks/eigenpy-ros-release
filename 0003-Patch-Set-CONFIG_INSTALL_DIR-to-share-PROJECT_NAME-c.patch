@@ -1,4 +1,4 @@
-From 2d49b1194e6ece225122ef3949895928ce4e33eb Mon Sep 17 00:00:00 2001
+From 50d22284aa7f2ff7a429d0cc04850bf4271e6dcd Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 13:52:47 +0100
 Subject: [PATCH 3/3] Patch: Set CONFIG_INSTALL_DIR to
@@ -9,7 +9,7 @@ Subject: [PATCH 3/3] Patch: Set CONFIG_INSTALL_DIR to
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index d029103..951b1c0 100644
+index d9be32f..188af64 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
