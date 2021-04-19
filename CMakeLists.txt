@@ -17,10 +17,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
 ENDIF()
 
-set(CMAKE_BUILD_TYPE "Release")
-set(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-set(CMAKE_INSTALL_LIBDIR "lib/")
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
@@ -194,12 +190,6 @@ IF(NOT WIN32)
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj> "-Wno-conversion")
 ELSE()
   TARGET_COMPILE_OPTIONS(${PROJECT_NAME} PRIVATE $<$<CXX_COMPILER_ID:MSVC>:-bigobj>)
-ENDIF()
-
-IF(Boost_VERSION GREATER 107299)
-  # Silence a warning about a deprecated use of boost bind by boost python
-  # at least fo boost 1.73 to 1.75
-  ADD_DEFINITIONS(-DBOOST_BIND_GLOBAL_PLACEHOLDERS)
 ENDIF()
 
 TARGET_LINK_BOOST_PYTHON(${PROJECT_NAME} PUBLIC)
