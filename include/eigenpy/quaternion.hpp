@@ -97,7 +97,7 @@ namespace eigenpy
     typedef typename QuaternionBase::Scalar Scalar;
     typedef typename Quaternion::Coefficients Coefficients;
     typedef typename QuaternionBase::Vector3 Vector3;
-    typedef typename Eigen::Matrix<Scalar,4,1> Vector4;
+    typedef Coefficients Vector4;
     typedef typename QuaternionBase::Matrix3 Matrix3;
 
     typedef typename QuaternionBase::AngleAxisType AngleAxis;
@@ -110,23 +110,26 @@ namespace eigenpy
     void visit(PyClass& cl) const 
     {
       cl
-      .def(bp::init<>(bp::arg("self"),"Default constructor"))
       .def(bp::init<Matrix3>((bp::arg("self"),bp::arg("R")),
                              "Initialize from rotation matrix.\n"
-                             "\tR : a rotation matrix 3x3."))
-      .def(bp::init<Vector4>((bp::arg("self"),bp::arg("vec4")),
-                             "Initialize from a vector 4D.\n"
-                             "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw."))
+                             "\tR : a rotation matrix 3x3.")[bp::return_value_policy<bp::return_by_value>()])
       .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("aa")),
                                "Initialize from an angle axis.\n"
                                "\taa: angle axis object."))
       .def(bp::init<Quaternion>((bp::arg("self"),bp::arg("quat")),
                                 "Copy constructor.\n"
-                                "\tquat: a quaternion."))
+                                "\tquat: a quaternion.")[bp::return_value_policy<bp::return_by_value>()])
       .def("__init__",bp::make_constructor(&QuaternionVisitor::FromTwoVectors,
                                            bp::default_call_policies(),
                                            (bp::arg("u"),bp::arg("v"))),
            "Initialize from two vectors u and v")
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::FromOneVector,
+                                           bp::default_call_policies(),
+                                           (bp::arg("vec4"))),
+           "Initialize from a vector 4D.\n"
+           "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw.")
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::DefaultConstructor),
+           "Default constructor")
       .def(bp::init<Scalar,Scalar,Scalar,Scalar>
            ((bp::arg("self"),bp::arg("w"),bp::arg("x"),bp::arg("y"),bp::arg("z")),
             "Initialize from coefficients.\n\n"
@@ -234,8 +237,9 @@ namespace eigenpy
            "Returns the quaternion which transforms a into b through a rotation.",
            bp::return_value_policy<bp::manage_new_object>())
       .staticmethod("FromTwoVectors")
-      .def("Identity",&Quaternion::Identity,
-           "Returns a quaternion representing an identity rotation.")
+      .def("Identity",&Identity,
+           "Returns a quaternion representing an identity rotation.",
+           bp::return_value_policy<bp::manage_new_object>())
       .staticmethod("Identity")
       ;
     }
@@ -254,9 +258,26 @@ namespace eigenpy
     static Quaternion & assign(Quaternion & self, const OtherQuat & quat)
     { return self = quat; }
 
+    static Quaternion* Identity()
+    {
+      Quaternion* q(new Quaternion); q->setIdentity();
+      return q;
+    }
+    
     static Quaternion* FromTwoVectors(const Vector3& u, const Vector3& v)
     {
       Quaternion* q(new Quaternion); q->setFromTwoVectors(u,v);
+      return q;
+    }
+    
+    static Quaternion* DefaultConstructor()
+    {
+      return new Quaternion;
+    }
+    
+    static Quaternion* FromOneVector(const Vector4& v)
+    {
+      Quaternion* q(new Quaternion(v[3],v[0],v[1],v[2]));
       return q;
     }
   
