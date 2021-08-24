@@ -17,10 +17,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
 ENDIF()
 
-set(CMAKE_BUILD_TYPE "Release")
-set(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-set(CMAKE_INSTALL_LIBDIR "lib/")
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
@@ -101,6 +97,7 @@ SET(${PROJECT_NAME}_DECOMPOSITIONS_HEADERS
   include/eigenpy/decompositions/LDLT.hpp
   include/eigenpy/decompositions/LLT.hpp
   include/eigenpy/decompositions/SelfAdjointEigenSolver.hpp
+  include/eigenpy/decompositions/minres.hpp
   )
 
 SET(${PROJECT_NAME}_HEADERS
