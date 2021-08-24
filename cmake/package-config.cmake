@@ -28,7 +28,7 @@ macro(_SETUP_PROJECT_PACKAGE_INIT)
 
   # Layout. This works for all platforms: * <prefix>/lib/cmake/<PROJECT-NAME> *
   # <prefix>/lib/ * <prefix>/include/
-  set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
   set(INCLUDE_INSTALL_DIR "include")
   set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -143,7 +143,7 @@ macro(SETUP_PROJECT_PACKAGE_FINALIZE)
 
   # Layout. This works for all platforms: * <prefix>/lib/cmake/<PROJECT-NAME> *
   # <prefix>/lib/ * <prefix>/include/
-  set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
+  set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
   set(INCLUDE_INSTALL_DIR "include")
   set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
