@@ -1,23 +1,22 @@
-From 4c4dd5d382391578f7a5c24e9db0de852556eb5c Mon Sep 17 00:00:00 2001
+From 9d37f759627e5b30f3147e0d4a0223d9ba35e552 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
-Date: Tue, 7 Apr 2020 13:52:47 +0100
-Subject: [PATCH 3/6] Patch: Set CONFIG_INSTALL_DIR to
- share/${PROJECT_NAME}/cmake
+Date: Tue, 24 Aug 2021 19:14:50 +0100
+Subject: [PATCH 5/6] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
 
 ---
  cmake/package-config.cmake | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index d9be32f..188af64 100644
+index d244f3e..bf8c2be 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
  #   * <prefix>/lib/cmake/<PROJECT-NAME>
  #   * <prefix>/lib/
  #   * <prefix>/include/
--set(CONFIG_INSTALL_DIR "share/cmake/${PROJECT_NAME}")
-+set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+-set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
++set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
  set(INCLUDE_INSTALL_DIR "include")
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
@@ -25,8 +24,8 @@ index d9be32f..188af64 100644
  #   * <prefix>/lib/cmake/<PROJECT-NAME>
  #   * <prefix>/lib/
  #   * <prefix>/include/
--set(CONFIG_INSTALL_DIR "lib/cmake/${PROJECT_NAME}")
-+set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+-set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
++set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
  set(INCLUDE_INSTALL_DIR "include")
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  

@@ -1,0 +1,35 @@
+From bd7c15152b48db72e1fb617fc48aff197b09b8f1 Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Tue, 24 Aug 2021 19:17:07 +0100
+Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
+
+---
+ CMakeLists.txt | 12 +++++++++---
+ 1 file changed, 9 insertions(+), 3 deletions(-)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index 542a9d1..e32e4f6 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -17,9 +17,15 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
+ ENDIF()
+ 
+-set(CMAKE_BUILD_TYPE "Release")
+-set(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
+-set(CMAKE_INSTALL_LIBDIR "lib/")
++IF(NOT DEFINED CMAKE_BUILD_TYPE)
++  SET(CMAKE_BUILD_TYPE "Release")
++ENDIF()
++IF(NOT DEFINED PYTHON_EXECUTABLE)
++  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
++ENDIF()
++IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
++  SET(CMAKE_INSTALL_LIBDIR "lib/")
++ENDIF()
+ 
+ # Disable -Werror on Unix for now.
+ SET(CXX_DISABLE_WERROR True)
+-- 
+2.25.1
+

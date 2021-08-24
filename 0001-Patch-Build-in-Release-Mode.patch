@@ -1,4 +1,4 @@
-From d20eb2b68eaaccbec1dfb5791fab057873da0ed5 Mon Sep 17 00:00:00 2001
+From eff6f869b82f4117dfaa6687da010c1b0ae709ab Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
 Subject: [PATCH 1/6] Patch: Build in Release Mode
@@ -8,7 +8,7 @@ Subject: [PATCH 1/6] Patch: Build in Release Mode
  1 file changed, 2 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 689dc3d..41ce862 100644
+index 97b46d6..e31e269 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -17,6 +17,8 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
