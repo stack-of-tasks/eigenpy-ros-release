@@ -73,7 +73,17 @@ def cxx_standard_cmp(lhs):
     return lhs
 cxx_standard = max(map(cxx_standard, "0;@CYTHON_BINDINGS_CXX_STANDARD@".split(';')), key = cxx_standard_cmp)
 if cxx_standard != 0:
-    config.compile_args.append('-std=c++{}'.format(cxx_standard))
+    if not win32_build:
+        config.compile_args.append('-std=c++{}'.format(cxx_standard))
+        # In C++17 the register keyword is unused and reserved, GCC still accepts it with a warning but clang errors by default
+        # It is used in Python 2.7 header file and so we need this flag
+        if cxx_standard >= 17:
+            config.compile_args.append('-Wno-register')
+    else:
+        if cxx_standard > 17:
+            config.compile_args.append('/std:c++latest')
+        elif cxx_standard == 17:
+            config.compile_args.append('/std:c++17')
 
 if win32_build:
     config.compile_args.append("-DWIN32")
