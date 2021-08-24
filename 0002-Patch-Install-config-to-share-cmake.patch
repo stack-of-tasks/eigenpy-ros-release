@@ -1,4 +1,4 @@
-From 1813333dae82f7f7b89caf2a11e06bd8e3fa3979 Mon Sep 17 00:00:00 2001
+From c59db083d09e102493cb6f1151495f9fb6252f8d Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:31 +0100
 Subject: [PATCH 2/6] Patch: Install config to share/cmake
