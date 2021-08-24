@@ -43,6 +43,16 @@ else()
   endif()
 endif()
 
+IF(NOT DEFINED CMAKE_BUILD_TYPE)
+  SET(CMAKE_BUILD_TYPE "Release")
+ENDIF()
+IF(NOT DEFINED PYTHON_EXECUTABLE)
+  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
+ENDIF()
+IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
+  SET(CMAKE_INSTALL_LIBDIR "lib/")
+ENDIF()
+
 function(set_standard_output_directory target)
   set_target_properties(
     ${target}
