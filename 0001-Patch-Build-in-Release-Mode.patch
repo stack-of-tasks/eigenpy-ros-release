@@ -1,4 +1,4 @@
-From 4626da16096b4e6f5f6aae0b4e57024e3a91b76a Mon Sep 17 00:00:00 2001
+From c572026d58011fdc043b3b18e8b86b3e6adcb25a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
 Subject: [PATCH 1/2] Patch: Build in Release Mode
