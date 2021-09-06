@@ -1,4 +1,4 @@
-From bd7c15152b48db72e1fb617fc48aff197b09b8f1 Mon Sep 17 00:00:00 2001
+From 239f36ccc0724ab87acdf5fabcf46c31372fedd9 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:17:07 +0100
 Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
