@@ -31,6 +31,20 @@ ENDIF()
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
+# ----------------------------------------------------
+# --- OPTIONS  ---------------------------------------
+# Need to be set before including base.cmake
+# ----------------------------------------------------
+OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
+OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
+
+IF(DEFINED BUILD_UNIT_TESTS)
+  MESSAGE(AUTHOR_WARNING "BUILD_UNIT_TESTS is deprecated. Use BUILD_TESTING instead.\
+    If you are manually building EigenPy from source in an existing build folder,\
+    we suggest that you delete your build folder and make a new one.")
+  SET(BUILD_TESTING ${BUILD_UNIT_TESTS})
+ENDIF(DEFINED BUILD_UNIT_TESTS)
+
 INCLUDE(cmake/base.cmake)
 COMPUTE_PROJECT_ARGS(PROJECT_ARGS LANGUAGES CXX)
 PROJECT(${PROJECT_NAME} ${PROJECT_ARGS})
@@ -39,6 +53,8 @@ INCLUDE(cmake/boost.cmake)
 INCLUDE(cmake/python.cmake)
 INCLUDE(cmake/ide.cmake)
 INCLUDE(cmake/apple.cmake)
+
+OPTION(GENERATE_PYTHON_STUBS "Generate the Python stubs associated to the Python library" OFF)
 
 STRING(REPLACE "-pedantic" "" CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS})
 
@@ -51,24 +67,21 @@ ELSE(WIN32)
   SET(LINK create_symlink)
 ENDIF(WIN32)
 
-# ----------------------------------------------------
-# --- OPTIONS  ---------------------------------------
-# ----------------------------------------------------
-OPTION(INSTALL_DOCUMENTATION "Generate and install the documentation" FALSE)
-OPTION(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
-
-IF(DEFINED BUILD_UNIT_TESTS)
-  MESSAGE(AUTHOR_WARNING "BUILD_UNIT_TESTS is deprecated. Use BUILD_TESTING instead.\
-    If you are manually building Pinocchio from source in an existing build folder,\
-    we suggest that you delete your build folder and make a new one.")
-  SET(BUILD_TESTING ${BUILD_UNIT_TESTS})
-ENDIF(DEFINED BUILD_UNIT_TESTS)
-
 FINDPYTHON()
 FIND_NUMPY()
 
 IF(WIN32)
   LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
+  # Set default Windows build paths
+  SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/Bin
+    CACHE PATH "Single directory for all libraries")
+  SET(CMAKE_RUNTIME_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/Bin
+    CACHE PATH "Single directory for all executables")
+  SET(CMAKE_ARCHIVE_OUTPUT_DIRECTORY
+    ${PROJECT_BINARY_DIR}/Bin
+    CACHE PATH "Sing$le directory for all archives")
 ENDIF(WIN32)
 
 # ----------------------------------------------------
@@ -159,7 +172,7 @@ SET(${PROJECT_NAME}_SOLVERS_SOURCES
 SET(${PROJECT_NAME}_DECOMPOSITIONS_SOURCES
   src/decompositions/decompositions.cpp
   )
-  
+
 SET(${PROJECT_NAME}_SOURCES
   ${${PROJECT_NAME}_SOLVERS_SOURCES}
   ${${PROJECT_NAME}_DECOMPOSITIONS_SOURCES}
@@ -184,11 +197,11 @@ SET(${PROJECT_NAME}_SOURCES
 )
 
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
-TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} 
-  SYSTEM PUBLIC 
-  ${Boost_INCLUDE_DIRS} 
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
+  SYSTEM PUBLIC
+  ${Boost_INCLUDE_DIRS}
   ${EIGEN3_INCLUDE_DIR}
-  ${PYTHON_INCLUDE_DIRS} 
+  ${PYTHON_INCLUDE_DIRS}
   ${NUMPY_INCLUDE_DIRS}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
