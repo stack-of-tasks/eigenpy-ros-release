@@ -1,4 +1,4 @@
-From 52ba086fdccf8b6f4c4bb676249e9d4a10e3a6a9 Mon Sep 17 00:00:00 2001
+From b1e8f16dec41f35a5a9caec0dd9cc967612bfcbd Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
 Subject: [PATCH 1/2] Patch: Build in Release Mode
@@ -8,11 +8,11 @@ Subject: [PATCH 1/2] Patch: Build in Release Mode
  1 file changed, 2 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 7a41d7f..f4d45bb 100644
+index 765d2ab..aaa425a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -17,6 +17,8 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
+@@ -27,6 +27,8 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+   ENDIF()
  ENDIF()
  
 +set(CMAKE_BUILD_TYPE "Release")
