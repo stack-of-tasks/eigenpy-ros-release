@@ -1,4 +1,4 @@
-From 239f36ccc0724ab87acdf5fabcf46c31372fedd9 Mon Sep 17 00:00:00 2001
+From 4218b37c7a6ab18e37deb5fb03a6a3d94ae181b0 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:17:07 +0100
 Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
@@ -8,7 +8,7 @@ Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 542a9d1..e32e4f6 100644
+index b0c6b81..43de388 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -17,9 +17,15 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
