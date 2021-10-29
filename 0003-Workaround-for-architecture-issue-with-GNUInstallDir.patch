@@ -1,4 +1,4 @@
-From 7117c735b4749eda93b9df1e1bee570317fa9643 Mon Sep 17 00:00:00 2001
+From 8cb5d43c139470de6ca23ddac97255ebd9208791 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 29 May 2020 11:47:27 +0100
 Subject: [PATCH 3/6] Workaround for architecture issue with GNUInstallDirs
@@ -8,10 +8,10 @@ Subject: [PATCH 3/6] Workaround for architecture issue with GNUInstallDirs
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index b71e93a..f061af3 100644
+index b278764..08db995 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -19,7 +19,7 @@ ENDIF()
+@@ -29,7 +29,7 @@ ENDIF()
  
  set(CMAKE_BUILD_TYPE "Release")
  set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
