@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2020 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2021 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -49,7 +49,7 @@
 #  Portable suffix of C++ Python modules.
 
 IF(CMAKE_VERSION VERSION_LESS "3.2")
-    SET(CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake/python ${CMAKE_MODULE_PATH})
+    SET(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/python ${CMAKE_MODULE_PATH})
     MESSAGE(STATUS "CMake versions older than 3.2 do not properly find Python. Custom macros are used to find it.")
 ENDIF(CMAKE_VERSION VERSION_LESS "3.2")
 
@@ -72,15 +72,22 @@ MACRO(FINDPYTHON)
     ENDIF()
 
     IF(PYTHON_EXECUTABLE)
+      IF(NOT EXISTS ${PYTHON_EXECUTABLE})
+        MESSAGE(FATAL_ERROR "${PYTHON_EXECUTABLE} is not a valid path to the Python executable")
+      ENDIF()
       EXECUTE_PROCESS(
         COMMAND ${PYTHON_EXECUTABLE} --version
         WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        RESULT_VARIABLE _PYTHON_VERSION_RESULT_VARIABLE
         OUTPUT_VARIABLE _PYTHON_VERSION_OUTPUT
         ERROR_VARIABLE _PYTHON_VERSION_OUTPUT
         OUTPUT_STRIP_TRAILING_WHITESPACE
         ERROR_STRIP_TRAILING_WHITESPACE
         )
 
+      IF(NOT "${_PYTHON_VERSION_RESULT_VARIABLE}" STREQUAL "0")
+        MESSAGE(FATAL_ERROR "${PYTHON_EXECUTABLE} --version did not succeed.")
+      ENDIF(NOT "${_PYTHON_VERSION_RESULT_VARIABLE}" STREQUAL "0")
       STRING(REGEX REPLACE "Python " "" _PYTHON_VERSION ${_PYTHON_VERSION_OUTPUT})
       STRING(REGEX REPLACE "\\." ";" _PYTHON_VERSION ${_PYTHON_VERSION})
       LIST(GET _PYTHON_VERSION 0 _PYTHON_VERSION_MAJOR)
@@ -175,14 +182,16 @@ MACRO(FINDPYTHON)
   MESSAGE(STATUS "PythonLibraryDirs: ${PYTHON_LIBRARY_DIRS}")
   MESSAGE(STATUS "PythonLibVersionString: ${PYTHONLIBS_VERSION_STRING}")
 
-  IF(NOT PYTHON_SITELIB)
+  IF(PYTHON_SITELIB)
+    FILE(TO_CMAKE_PATH "${PYTHON_SITELIB}" PYTHON_SITELIB)
+  ELSE(PYTHON_SITELIB)
     # Use either site-packages (default) or dist-packages (Debian packages) directory
     OPTION(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
     # ref. https://docs.python.org/3/library/site.html
     OPTION(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" OFF)
 
     IF(PYTHON_STANDARD_LAYOUT)
-      SET(PYTHON_SITELIB_CMD "import sys, os; print(os.sep.join(['lib', 'python' + sys.version[:3], 'site-packages']))")
+      SET(PYTHON_SITELIB_CMD "import sys, os; print(os.sep.join(['lib', 'python' + '.'.join(sys.version.split('.')[:2]), 'site-packages']))")
     ELSE(PYTHON_STANDARD_LAYOUT)
       SET(PYTHON_SITELIB_CMD "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix='', plat_specific=False))")
     ENDIF(PYTHON_STANDARD_LAYOUT)
@@ -203,7 +212,7 @@ MACRO(FINDPYTHON)
     IF(PYTHON_PACKAGES_DIR)
       STRING(REGEX REPLACE "(site-packages|dist-packages)" "${PYTHON_PACKAGES_DIR}" PYTHON_SITELIB "${PYTHON_SITELIB}")
     ENDIF(PYTHON_PACKAGES_DIR)
-  ENDIF(NOT PYTHON_SITELIB)
+  ENDIF(PYTHON_SITELIB)
 
   MESSAGE(STATUS "Python site lib: ${PYTHON_SITELIB}")
 
@@ -276,57 +285,64 @@ ENDMACRO(FINDPYTHON)
 #
 MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
 
-  # By default the __init__.py file is installed.
-  SET(INSTALL_INIT_PY 1)
-  SET(SOURCE_PYTHON_MODULE "cmake/dynamic_graph/python-module-py.cc")
+  set(options DONT_INSTALL_INIT_PY)
+  set(oneValueArgs SOURCE_PYTHON_MODULE MODULE_HEADER)
+  cmake_parse_arguments(ARG "${options}" "${oneValueArgs}"
+                        "${multiValueArgs}" ${ARGN} )
 
-  # Check if there is optional parameters.
-  set(extra_macro_args ${ARGN})
-  list(LENGTH extra_macro_args num_extra_args)
-  if( ${num_extra_args} GREATER 0)
-    list(GET extra_macro_args 0 INSTALL_INIT_PY)
-    if( ${num_extra_args} GREATER 1)
-      list(GET extra_macro_args 1 SOURCE_PYTHON_MODULE)
-    endif(${num_extra_args} GREATER 1)
-  endif(${num_extra_args} GREATER 0)
+  # By default the __init__.py file is installed.
+  if(NOT DEFINED ARG_SOURCE_PYTHON_MODULE)
+    set(DYNAMICGRAPH_MODULE_HEADER ${ARG_MODULE_HEADER})
+    configure_file(
+      ${PROJECT_JRL_CMAKE_MODULE_DIR}/dynamic_graph/python-module-py.cc.in
+      ${PROJECT_BINARY_DIR}/src/dynamic_graph/${SUBMODULENAME}/python-module-py.cc
+      @ONLY
+      )
+    SET(ARG_SOURCE_PYTHON_MODULE "${PROJECT_BINARY_DIR}/src/dynamic_graph/${SUBMODULENAME}/python-module-py.cc")
+  endif()
 
   IF(NOT DEFINED PYTHONLIBS_FOUND)
     FINDPYTHON()
   ELSEIF(NOT ${PYTHONLIBS_FOUND} STREQUAL "TRUE")
     MESSAGE(FATAL_ERROR "Python has not been found.")
   ENDIF()
+  if(NOT DEFINED Boost_PYTHON_LIBRARIES)
+    MESSAGE(FATAL_ERROR "Boost Python library must have been found to call this macro.")
+  endif()
 
   SET(PYTHON_MODULE ${TARGETNAME})
-  # We need to set this policy to old to accept wrap target.
-  CMAKE_POLICY(PUSH)
-  IF(POLICY CMP0037)
-    CMAKE_POLICY(SET CMP0037 OLD)
-  ENDIF()
 
   ADD_LIBRARY(${PYTHON_MODULE}
     MODULE
-    ${PROJECT_SOURCE_DIR}/${SOURCE_PYTHON_MODULE})
+    ${ARG_SOURCE_PYTHON_MODULE})
 
   FILE(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/src/dynamic_graph/${SUBMODULENAME})
+
+  SET(PYTHON_INSTALL_DIR "${PYTHON_SITELIB}/dynamic_graph/${SUBMODULENAME}")
+  STRING(REGEX REPLACE "[^/]+" ".." PYTHON_INSTALL_DIR_REVERSE ${PYTHON_INSTALL_DIR})
 
   SET_TARGET_PROPERTIES(${PYTHON_MODULE}
     PROPERTIES PREFIX ""
     OUTPUT_NAME dynamic_graph/${SUBMODULENAME}/wrap
-    BUILD_RPATH ${DYNAMIC_GRAPH_PLUGINDIR}
+    BUILD_RPATH "${DYNAMIC_GRAPH_PLUGINDIR}:\$ORIGIN/${PYTHON_INSTALL_DIR_REVERSE}/${DYNAMIC_GRAPH_PLUGINDIR}"
    )
-  CMAKE_POLICY(POP)
 
   IF (UNIX AND NOT APPLE)
     TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} "-Wl,--no-as-needed")
   ENDIF(UNIX AND NOT APPLE)
-  TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} ${LIBRARYNAME} ${PYTHON_LIBRARY})
+  TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} ${LIBRARYNAME} ${PYTHON_LIBRARY} dynamic-graph::dynamic-graph)
+  TARGET_LINK_BOOST_PYTHON(${PYTHON_MODULE} ${PUBLIC_KEYWORD})
+  if(PROJECT_NAME STREQUAL "dynamic-graph-python")
+    TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} dynamic-graph-python)
+  else()
+    TARGET_LINK_LIBRARIES(${PYTHON_MODULE} ${PUBLIC_KEYWORD} dynamic-graph-python::dynamic-graph-python)
+  endif()
 
   TARGET_INCLUDE_DIRECTORIES(${PYTHON_MODULE} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
 
   #
   # Installation
   #
-  SET(PYTHON_INSTALL_DIR ${PYTHON_SITELIB}/dynamic_graph/${SUBMODULENAME})
 
   INSTALL(TARGETS ${PYTHON_MODULE}
     DESTINATION
@@ -337,11 +353,11 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
     SET(ENTITY_CLASS_LIST "${ENTITY_CLASS_LIST}${ENTITY}('')\n")
   ENDFOREACH(ENTITY ${NEW_ENTITY_CLASS})
 
-  # Install if INSTALL_INIT_PY is set to 1
-  IF (${INSTALL_INIT_PY} EQUAL 1)
+  # Install if not DONT_INSTALL_INIT_PY
+  if(NOT DONT_INSTALL_INIT_PY)
 
     CONFIGURE_FILE(
-      ${PROJECT_SOURCE_DIR}/cmake/dynamic_graph/submodule/__init__.py.cmake
+      ${PROJECT_JRL_CMAKE_MODULE_DIR}/dynamic_graph/submodule/__init__.py.cmake
       ${PROJECT_BINARY_DIR}/src/dynamic_graph/${SUBMODULENAME}/__init__.py
       )
 
@@ -350,7 +366,7 @@ MACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
       DESTINATION ${PYTHON_INSTALL_DIR}
       )
 
-  ENDIF(${INSTALL_INIT_PY} EQUAL 1)
+  endif()
 
 ENDMACRO(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME)
 
@@ -404,7 +420,7 @@ MACRO(PYTHON_BUILD MODULE FILE)
     PRE_BUILD
     COMMAND
     "${PYTHON_EXECUTABLE}"
-    "${PROJECT_SOURCE_DIR}/cmake/compile.py"
+    "${PROJECT_JRL_CMAKE_MODULE_DIR}/compile.py"
     "${CMAKE_CURRENT_SOURCE_DIR}"
     "${CMAKE_CURRENT_BINARY_DIR}"
     "${MODULE}/${FILE}"
@@ -423,6 +439,42 @@ MACRO(PYTHON_BUILD MODULE FILE)
     )
 ENDMACRO()
 
+# PYTHON_BUILD_FILE(FILE)
+# --------------------------------------
+#
+# Build a Python a given file.
+#
+MACRO(PYTHON_BUILD_FILE FILE)
+  # Regex from IsValidTargetName in CMake/Source/cmGeneratorExpression.cxx
+  STRING(REGEX REPLACE "[^A-Za-z0-9_.+-]" "_" compile_pyc "compile_pyc_${CMAKE_CURRENT_SOURCE_DIR}")
+  IF(NOT TARGET ${compile_pyc})
+    ADD_CUSTOM_TARGET(${compile_pyc} ALL)
+  ENDIF()
+
+  ADD_CUSTOM_COMMAND(
+    TARGET ${compile_pyc}
+    PRE_BUILD
+    COMMAND
+    "${PYTHON_EXECUTABLE}"
+    -c "import py_compile; py_compile.compile(\"${FILE}\",\"${FILE}c\")"
+    VERBATIM
+  )
+
+  # Tag pyc file as generated.
+  SET_SOURCE_FILES_PROPERTIES(
+    "${FILE}c"
+    PROPERTIES GENERATED TRUE)
+
+  # Clean generated files.
+  SET_PROPERTY(
+    DIRECTORY APPEND PROPERTY
+    ADDITIONAL_MAKE_CLEAN_FILES
+    "${FILE}c"
+    )
+ENDMACRO()
+
+
+
 # PYTHON_INSTALL_BUILD(MODULE FILE DEST)
 # --------------------------------------
 #
@@ -440,7 +492,7 @@ MACRO(PYTHON_INSTALL_BUILD MODULE FILE DEST)
   INSTALL(CODE
     "EXECUTE_PROCESS(COMMAND
     \"${PYTHON_EXECUTABLE}\"
-    \"${PROJECT_SOURCE_DIR}/cmake/compile.py\"
+    \"${PROJECT_JRL_CMAKE_MODULE_DIR}/compile.py\"
     \"${CMAKE_CURRENT_BINARY_DIR}\"
     \"${CMAKE_CURRENT_BINARY_DIR}\"
     \"${MODULE}/${FILE}\")
@@ -465,24 +517,38 @@ MACRO(PYTHON_INSTALL_BUILD MODULE FILE DEST)
 ENDMACRO()
 
 #.rst:
-# .. command:: FIND_NUMPY
+# .. command:: FIND_NUMPY()
 #
-#   Detect numpy module
+#   Detect numpy module and define the variable NUMPY_INCLUDE_DIRS if it is not already set.
 #
 
 MACRO(FIND_NUMPY)
   # Detect numpy.
   MESSAGE (STATUS "checking for numpy")
   EXECUTE_PROCESS(
-    COMMAND "${PYTHON_EXECUTABLE}" "-c"
-    "import numpy; print (numpy.get_include())"
-    OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
+    COMMAND "${PYTHON_EXECUTABLE}" "-c" "import numpy; print (True)"
+    OUTPUT_VARIABLE IS_NUMPY
     ERROR_QUIET)
-  IF (NOT NUMPY_INCLUDE_DIRS)
+  IF (NOT IS_NUMPY)
     MESSAGE (FATAL_ERROR "Failed to detect numpy")
   ELSE ()
-    STRING(REGEX REPLACE "\n$" "" NUMPY_INCLUDE_DIRS "${NUMPY_INCLUDE_DIRS}")
-    FILE(TO_CMAKE_PATH "${NUMPY_INCLUDE_DIRS}" NUMPY_INCLUDE_DIRS)
-    MESSAGE (STATUS " NUMPY_INCLUDE_DIRS=${NUMPY_INCLUDE_DIRS}")
+    IF(NOT NUMPY_INCLUDE_DIRS)
+      EXECUTE_PROCESS(
+        COMMAND "${PYTHON_EXECUTABLE}" "-c"
+        "import numpy; print (numpy.get_include())"
+        OUTPUT_VARIABLE NUMPY_INCLUDE_DIRS
+        ERROR_QUIET)
+      STRING(REGEX REPLACE "\n$" "" NUMPY_INCLUDE_DIRS "${NUMPY_INCLUDE_DIRS}")
+      FILE(TO_CMAKE_PATH "${NUMPY_INCLUDE_DIRS}" NUMPY_INCLUDE_DIRS)
+    ENDIF()
+    MESSAGE(STATUS "  NUMPY_INCLUDE_DIRS=${NUMPY_INCLUDE_DIRS}")
+    # Retrive NUMPY_VERSION
+    EXECUTE_PROCESS(
+      COMMAND "${PYTHON_EXECUTABLE}" "-c"
+      "import numpy; print (numpy.__version__)"
+      OUTPUT_VARIABLE NUMPY_VERSION
+      ERROR_QUIET)
+    STRING(REGEX REPLACE "\n$" "" NUMPY_VERSION "${NUMPY_VERSION}")
+    MESSAGE(STATUS "  NUMPY_VERSION=${NUMPY_VERSION}")
   ENDIF()
 ENDMACRO()

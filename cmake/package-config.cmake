@@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -49,11 +49,12 @@ set(namespace "${PROJECT_NAME}::")
 set(_PACKAGE_CONFIG_DEPENDENCIES_PROJECTS "" CACHE INTERNAL "")
 set(_PACKAGE_CONFIG_DEPENDENCIES_FIND_PACKAGE "" CACHE INTERNAL "")
 set(_PACKAGE_CONFIG_DEPENDENCIES_FIND_DEPENDENCY "" CACHE INTERNAL "")
+set(_PACKAGE_CONFIG_DEPENDENCIES_FIND_EXTERNAL "" CACHE INTERNAL "")
 set(PACKAGE_EXTRA_MACROS "" CACHE INTERNAL "")
 ENDMACRO(_SETUP_PROJECT_PACKAGE_INIT)
 
 #.rst:
-# .. command:: ADD_PROJECT_DEPENDENCY(ARGS [PKG_CONFIG_REQUIRES pkg] [FOR_COMPONENT component])
+# .. command:: ADD_PROJECT_DEPENDENCY(ARGS [PKG_CONFIG_REQUIRES pkg] [FOR_COMPONENT component] [FIND_EXTERNAL pkg])
 #
 #   This is a wrapper around find_package to add correct find_dependency calls in
 #   the generated config script. All arguments are passed to find_package.
@@ -65,10 +66,13 @@ ENDMACRO(_SETUP_PROJECT_PACKAGE_INIT)
 #   If PKG_CONFIG_REQUIRES is provided, it will also add pkg to the Requires
 #   section of the generated .pc file
 #
+#   If FIND_EXTERNAL is provided, a custom dependency finder will be added in $CMAKE_MODULE_PATH
+#   and installed with the project
+#
 MACRO(ADD_PROJECT_DEPENDENCY)
   # add dependency to the generated .pc
   # ref https://github.com/jrl-umi3218/jrl-cmakemodules/pull/335
-  cmake_parse_arguments(PARSED_ARGN "" "PKG_CONFIG_REQUIRES;FOR_COMPONENT" "" ${ARGN})
+  cmake_parse_arguments(PARSED_ARGN "" "PKG_CONFIG_REQUIRES;FOR_COMPONENT;FIND_EXTERNAL" "" ${ARGN})
   IF(PARSED_ARGN_PKG_CONFIG_REQUIRES)
     _ADD_TO_LIST_IF_NOT_PRESENT(_PKG_CONFIG_REQUIRES "${PARSED_ARGN_PKG_CONFIG_REQUIRES}")
     _ADD_TO_LIST_IF_NOT_PRESENT(_PKG_CONFIG_DEP_NOT_FOR_CONFIG_CMAKE "${PARSED_ARGN_PKG_CONFIG_REQUIRES}")
@@ -76,6 +80,15 @@ MACRO(ADD_PROJECT_DEPENDENCY)
   if(PARSED_ARGN_FOR_COMPONENT)
     set(component "_${PARSED_ARGN_FOR_COMPONENT}")
   endif(PARSED_ARGN_FOR_COMPONENT)
+  if(PARSED_ARGN_FIND_EXTERNAL)
+    set(_ext "find-external/${PARSED_ARGN_FIND_EXTERNAL}")
+    set(CMAKE_MODULE_PATH "${PROJECT_JRL_CMAKE_MODULE_DIR}/${_ext}"
+      ${CMAKE_MODULE_PATH})
+    set(_PACKAGE_CONFIG_DEPENDENCIES_FIND_EXTERNAL
+      "${_PACKAGE_CONFIG_DEPENDENCIES_FIND_EXTERNAL}\n \${PACKAGE_PREFIX_DIR}/${CONFIG_INSTALL_DIR}/${_ext}")
+    install(DIRECTORY "${PROJECT_JRL_CMAKE_MODULE_DIR}/${_ext}"
+      DESTINATION "${CONFIG_INSTALL_DIR}/find-external")
+  endif()
   _ADD_TO_LIST_IF_NOT_PRESENT(_PACKAGE_CONFIG${component}_DEPENDENCIES_PROJECTS "${ARGV0}")
 
   string(REPLACE ";" " " PACKAGE_ARGS "${PARSED_ARGN_UNPARSED_ARGUMENTS}")
@@ -115,7 +128,7 @@ MACRO(SETUP_PROJECT_PACKAGE_FINALIZE)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "share/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -136,12 +149,16 @@ string(REPLACE ";" "\n  " PACKAGE_DEPENDENCIES_FIND_PACKAGE "${_PACKAGE_CONFIG_D
 string(REPLACE ";" "\n  " PACKAGE_DEPENDENCIES_FIND_DEPENDENCY "${_PACKAGE_CONFIG_DEPENDENCIES_FIND_DEPENDENCY}")
 
 if(DEFINED _MINIMAL_CXX_STANDARD)
-  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}
-if(COMMAND CHECK_MINIMAL_CXX_STANDARD)
-  CHECK_MINIMAL_CXX_STANDARD(${_MINIMAL_CXX_STANDARD})
-else()
-  MESSAGE(WARNING \"This dependency requires C++ >= ${_MINIMAL_CXX_STANDARD}\")
-endif()")
+  # Read macro file and append
+  file(READ ${PROJECT_JRL_CMAKE_MODULE_DIR}/cxx-standard.cmake CXX_STANDARD_MACRO_CONTENT)
+  set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\n# C++ standard compatibility check/enforcement\nset(_MINIMAL_CXX_STANDARD ${_MINIMAL_CXX_STANDARD})\n\n${CXX_STANDARD_MACRO_CONTENT}")
+
+  # Add check for standard - enforce if required
+  if(${MINIMAL_CXX_STANDARD_ENFORCE})
+    set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nCHECK_MINIMAL_CXX_STANDARD(${_MINIMAL_CXX_STANDARD} ENFORCE)")
+  else()
+    set(PACKAGE_EXTRA_MACROS "${PACKAGE_EXTRA_MACROS}\nCHECK_MINIMAL_CXX_STANDARD(${_MINIMAL_CXX_STANDARD})")
+  endif()
 endif()
 
 # Configure '<PROJECT-NAME>ConfigVersion.cmake'
@@ -171,7 +188,7 @@ else()
 endif()
 
 configure_package_config_file(
-    "cmake/Config.cmake.in"
+    "${PROJECT_JRL_CMAKE_MODULE_DIR}/Config.cmake.in"
     "${PROJECT_CONFIG}"
     INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
 )
@@ -229,7 +246,7 @@ macro(PROJECT_INSTALL_COMPONENT COMPONENT)
   set(COMPONENT_EXTRA_MACRO "${PARSED_ARGN_EXTRA_MACRO}")
   include(CMakePackageConfigHelpers)
   configure_package_config_file(
-      "${CMAKE_SOURCE_DIR}/cmake/componentConfig.cmake.in"
+      "${PROJECT_JRL_CMAKE_MODULE_DIR}/componentConfig.cmake.in"
       "${COMPONENT_CONFIG}"
       INSTALL_DESTINATION "${CONFIG_INSTALL_DIR}"
       NO_CHECK_REQUIRED_COMPONENTS_MACRO

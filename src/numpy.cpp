@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 INRIA
+ * Copyright 2020-2021 INRIA
  */
 
 #include "eigenpy/numpy.hpp"
@@ -58,6 +58,21 @@ namespace eigenpy
   {
     return PyArray_RegisterDataType(dtype);
   }
-  
+
+  PyArray_Descr * call_PyArray_MinScalarType(PyArrayObject * arr)
+  {
+    return PyArray_MinScalarType(arr);
+  }
+
+  int call_PyArray_RegisterCanCast(PyArray_Descr *descr, int totype, NPY_SCALARKIND scalar)
+  {
+    return PyArray_RegisterCanCast(descr,totype,scalar);
+  }
+
+  int call_PyArray_RegisterCastFunc(PyArray_Descr* descr, int totype, PyArray_VectorUnaryFunc* castfunc)
+  {
+    return PyArray_RegisterCastFunc(descr,totype,castfunc);
+  }
+
 #endif
 }

@@ -6,7 +6,7 @@
 #define __eigenpy_register_hpp__
 
 #include "eigenpy/fwd.hpp"
-#include "eigenpy/numpy-type.hpp"
+#include "eigenpy/numpy.hpp"
 #include "eigenpy/exception.hpp"
 
 #include <algorithm>
@@ -36,6 +36,7 @@ namespace eigenpy
     template<typename Scalar>
     static PyTypeObject * getPyType()
     {
+      namespace bp = boost::python;
       if(!isNumpyNativeType<Scalar>())
       {
         const PyTypeObject * const_py_type_ptr = bp::converter::registered_pytype<Scalar>::get_pytype();
@@ -52,6 +53,20 @@ namespace eigenpy
       {
         PyArray_Descr * new_descr = call_PyArray_DescrFromType(NumpyEquivalentType<Scalar>::type_code);
         return new_descr->typeobj;
+      }
+    }
+    
+    template<typename Scalar>
+    static PyArray_Descr * getPyArrayDescr()
+    {
+      namespace bp = boost::python;
+      if(!isNumpyNativeType<Scalar>())
+      {
+        return getPyArrayDescr(getPyType<Scalar>());
+      }
+      else
+      {
+        return call_PyArray_DescrFromType(NumpyEquivalentType<Scalar>::type_code);
       }
     }
     
@@ -78,12 +93,15 @@ namespace eigenpy
     static int registerNewType(PyTypeObject * py_type_ptr,
                                const std::type_info * type_info_ptr,
                                const int type_size,
+                               const int alignment,
                                PyArray_GetItemFunc * getitem,
                                PyArray_SetItemFunc * setitem,
                                PyArray_NonzeroFunc * nonzero,
                                PyArray_CopySwapFunc * copyswap,
                                PyArray_CopySwapNFunc * copyswapn,
-                               PyArray_DotFunc * dotfunc);
+                               PyArray_DotFunc * dotfunc,
+                               PyArray_FillFunc * fill,
+                               PyArray_FillWithScalarFunc * fillwithscalar);
     
     static Register & instance();
     
