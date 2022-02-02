@@ -41,10 +41,16 @@ namespace eigenpy
     struct referent_storage_eigen_ref
     {
       typedef Eigen::Ref<MatType,Options,Stride> RefType;
-      
+#if BOOST_VERSION / 100 % 1000 >= 77
+      typedef typename ::boost::python::detail::aligned_storage<
+          ::boost::python::detail::referent_size<RefType&>::value,
+          ::boost::alignment_of<RefType&>::value
+      >::type AlignedStorage;
+#else
       typedef ::boost::python::detail::aligned_storage<
           ::boost::python::detail::referent_size<RefType&>::value
       > AlignedStorage;
+#endif
       
       referent_storage_eigen_ref()
       : pyArray(NULL)
@@ -93,18 +99,22 @@ namespace boost { namespace python { namespace detail {
   struct referent_storage<Eigen::Ref<MatType,Options,Stride> &>
   {
     typedef ::eigenpy::details::referent_storage_eigen_ref<MatType,Options,Stride> StorageType;
-    typedef aligned_storage<
-        ::boost::python::detail::referent_size<StorageType&>::value
-    > type;
+#if BOOST_VERSION / 100 % 1000 >= 77
+    typedef typename aligned_storage<referent_size<StorageType&>::value>::type type;
+#else
+    typedef aligned_storage<referent_size<StorageType&>::value> type;
+#endif
   };
 
   template<typename MatType, int Options, typename Stride>
   struct referent_storage<const Eigen::Ref<const MatType,Options,Stride> &>
   {
     typedef ::eigenpy::details::referent_storage_eigen_ref<const MatType,Options,Stride> StorageType;
-    typedef aligned_storage<
-        ::boost::python::detail::referent_size<StorageType&>::value
-    > type;
+#if BOOST_VERSION / 100 % 1000 >= 77
+    typedef typename aligned_storage<referent_size<StorageType&>::value, alignment_of<StorageType&>::value>::type type;
+#else
+    typedef aligned_storage<referent_size<StorageType&>::value> type;
+#endif
   };
 #endif
 }}}
@@ -275,13 +285,13 @@ namespace eigenpy
     memory->convertible = storage->storage.bytes;
   }
 
-  template<typename MatType>
+  template<typename MatType, typename _Scalar>
   struct EigenFromPy
   {
     typedef typename MatType::Scalar Scalar;
     
     /// \brief Determine if pyObj can be converted into a MatType object
-    static void* convertible(PyArrayObject* pyArray);
+    static void* convertible(PyObject* pyObj);
  
     /// \brief Allocate memory and copy pyObj in the new storage
     static void construct(PyObject* pyObj,
@@ -290,11 +300,13 @@ namespace eigenpy
     static void registration();
   };
 
-  template<typename MatType>
-  void* EigenFromPy<MatType>::convertible(PyArrayObject* pyArray)
+  template<typename MatType, typename _Scalar>
+  void* EigenFromPy<MatType,_Scalar>::convertible(PyObject* pyObj)
   {
-    if(!call_PyArray_Check(reinterpret_cast<PyObject*>(pyArray)))
+    if(!call_PyArray_Check(reinterpret_cast<PyObject*>(pyObj)))
       return 0;
+    
+    PyArrayObject * pyArray =  reinterpret_cast<PyArrayObject*>(pyObj);
     
     if(!np_type_is_convertible_into_scalar<Scalar>(EIGENPY_GET_PY_ARRAY_TYPE(pyArray)))
       return 0;
@@ -403,15 +415,15 @@ namespace eigenpy
     return pyArray;
   }
 
-  template<typename MatType>
-  void EigenFromPy<MatType>::construct(PyObject* pyObj,
-                                       bp::converter::rvalue_from_python_stage1_data* memory)
+  template<typename MatType, typename _Scalar>
+  void EigenFromPy<MatType,_Scalar>::construct(PyObject* pyObj,
+                                               bp::converter::rvalue_from_python_stage1_data* memory)
   {
     eigen_from_py_construct<MatType>(pyObj,memory);
   }
 
-  template<typename MatType>
-  void EigenFromPy<MatType>::registration()
+  template<typename MatType, typename _Scalar>
+  void EigenFromPy<MatType,_Scalar>::registration()
   {
     bp::converter::registry::push_back
     (reinterpret_cast<void *(*)(_object *)>(&EigenFromPy::convertible),
@@ -431,7 +443,7 @@ namespace eigenpy
 
       // Add conversion to Eigen::EigenBase<MatType>
       typedef Eigen::EigenBase<MatType> EigenBase;
-      EigenFromPy<EigenBase>::registration();
+      EigenFromPy<EigenBase,typename MatType::Scalar>::registration();
 
       // Add conversion to Eigen::PlainObjectBase<MatType>
       typedef Eigen::PlainObjectBase<MatType> PlainObjectBase;
@@ -464,7 +476,7 @@ namespace eigenpy
   };
     
   template<typename MatType>
-  struct EigenFromPy< Eigen::EigenBase<MatType> > : EigenFromPy<MatType>
+  struct EigenFromPy< Eigen::EigenBase<MatType>, typename MatType::Scalar > : EigenFromPy<MatType>
   {
     typedef EigenFromPy<MatType> EigenFromPyDerived;
     typedef Eigen::EigenBase<MatType> Base;
@@ -500,13 +512,14 @@ namespace eigenpy
     typedef typename MatType::Scalar Scalar;
     
     /// \brief Determine if pyObj can be converted into a MatType object
-    static void* convertible(PyArrayObject * pyArray)
+    static void* convertible(PyObject * pyObj)
     {
-      if(!call_PyArray_Check(reinterpret_cast<PyObject*>(pyArray)))
+      if(!call_PyArray_Check(pyObj))
         return 0;
+      PyArrayObject * pyArray = reinterpret_cast<PyArrayObject*>(pyObj);
       if(!PyArray_ISWRITEABLE(pyArray))
         return 0;
-      return EigenFromPy<MatType>::convertible(pyArray);
+      return EigenFromPy<MatType>::convertible(pyObj);
     }
     
     static void registration()
@@ -524,9 +537,9 @@ namespace eigenpy
     typedef typename MatType::Scalar Scalar;
     
     /// \brief Determine if pyObj can be converted into a MatType object
-    static void* convertible(PyArrayObject * pyArray)
+    static void* convertible(PyObject * pyObj)
     {
-      return EigenFromPy<MatType>::convertible(pyArray);
+      return EigenFromPy<MatType>::convertible(pyObj);
     }
     
     static void registration()

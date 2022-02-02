@@ -3,11 +3,10 @@
  * Copyright 2018-2019, INRIA
  */
 
+#include "eigenpy/fwd.hpp"
+
 #ifndef __eigenpy_registration_hpp__
 #define __eigenpy_registration_hpp__
-
-#include <boost/python.hpp>
-#include <boost/python/scope.hpp>
 
 namespace eigenpy
 {
