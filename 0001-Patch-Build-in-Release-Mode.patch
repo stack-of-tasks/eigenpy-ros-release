@@ -1,25 +1,28 @@
-From c4144cf81a31a2d4ca5cfbc3a59c062824b164df Mon Sep 17 00:00:00 2001
+From d94cd66c4969f2429eb93314904c377498a7c5cc Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
-Subject: [PATCH 1/5] Patch: Build in Release Mode
+Subject: [PATCH 1/2] Patch: Build in Release Mode
 
 ---
- CMakeLists.txt | 2 ++
- 1 file changed, 2 insertions(+)
+ CMakeLists.txt | 5 +++++
+ 1 file changed, 5 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 8728614..d3e7e17 100644
+index 95632c4..e9196ac 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -17,6 +17,8 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-   MESSAGE(FATAL_ERROR "\nPlease run the following command first:\ngit submodule update --init\n")
- ENDIF()
- 
-+set(CMAKE_BUILD_TYPE "Release")
-+
- # Disable -Werror on Unix for now.
+@@ -31,6 +31,11 @@ ENDIF()
  SET(CXX_DISABLE_WERROR True)
  SET(CMAKE_VERBOSE_MAKEFILE True)
+ 
++# Patches
++if(NOT DEFINED CMAKE_BUILD_TYPE)
++  set(CMAKE_BUILD_TYPE Release)
++endif()
++
+ # ----------------------------------------------------
+ # --- OPTIONS  ---------------------------------------
+ # Need to be set before including base.cmake
 -- 
 2.25.1
 

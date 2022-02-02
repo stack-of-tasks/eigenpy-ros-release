@@ -1,0 +1,26 @@
+From 7e555b86ccefc7c3d59d1ab2e5c97c4add728a68 Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Fri, 24 Apr 2020 15:29:32 +0100
+Subject: [PATCH 2/2] Explicitly set Python3 for Debian Buster
+
+---
+ CMakeLists.txt | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index e9196ac..aa94723 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -35,6 +35,9 @@ SET(CMAKE_VERBOSE_MAKEFILE True)
+ if(NOT DEFINED CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE Release)
+ endif()
++if(NOT DEFINED PYTHON_EXECUTABLE)
++  set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
++endif()
+ 
+ # ----------------------------------------------------
+ # --- OPTIONS  ---------------------------------------
+-- 
+2.25.1
+
