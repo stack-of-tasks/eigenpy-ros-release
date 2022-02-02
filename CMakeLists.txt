@@ -31,14 +31,6 @@ ENDIF()
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
-# Patches
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
