@@ -1,6 +1,6 @@
 /*
  * Copyright 2014-2019, CNRS
- * Copyright 2018-2020, INRIA
+ * Copyright 2018-2021, INRIA
  */
 
 #include "eigenpy/eigenpy.hpp"
@@ -14,6 +14,7 @@ namespace eigenpy
     srand(seed_value);
   }
 
+  void exposeMatrixBool();
   void exposeMatrixInt();
   void exposeMatrixLong();
   void exposeMatrixFloat();
@@ -33,7 +34,7 @@ namespace eigenpy
     Exception::registerException();
     
     bp::def("setNumpyType",&NumpyType::setNumpyType,
-            bp::arg("Numpy type (np.ndarray or np.matrix)"),
+            bp::arg("numpy_type"),
             "Change the Numpy type returned by the converters from an Eigen object.");
             
     bp::def("getNumpyType",&NumpyType::getNumpyType,
@@ -59,6 +60,7 @@ namespace eigenpy
     bp::def("seed",&seed,bp::arg("seed_value"),
             "Initialize the pseudo-random number generator with the argument seed_value.");
     
+    exposeMatrixBool();
     exposeMatrixInt();
     exposeMatrixLong();
     exposeMatrixFloat();

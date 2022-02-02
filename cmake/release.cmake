@@ -65,6 +65,15 @@ MACRO(RELEASE_SETUP)
       && ! test x$$VERSION = x
         || (echo "Please set a version for this release" && false)
       && cd ${PROJECT_SOURCE_DIR}
+      # Update version in package.xml if it exists
+      && if [ -f "package.xml" ]; then
+          (echo "Updating package.xml to $$VERSION"
+           && sed -i.back \"s|<version>.*</version>|<version>$$VERSION</version>|g\" package.xml
+           && rm package.xml.back
+           && ${GIT} add package.xml
+           && ${GIT} commit -m "release: Update package.xml version to $$VERSION"
+           && echo "Updated package.xml and committed") ;
+         fi
       && ${GIT} tag -s v$$VERSION -m "Release of version $$VERSION."
       && cd ${CMAKE_BINARY_DIR}
       && cmake ${PROJECT_SOURCE_DIR}

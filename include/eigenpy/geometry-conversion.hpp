@@ -1,14 +1,13 @@
 /*
  * Copyright 2014-2019, CNRS
- * Copyright 2018-2019, INRIA
+ * Copyright 2018-2021, INRIA
  */
 
 #ifndef __eigenpy_geometry_conversion_hpp__
 #define __eigenpy_geometry_conversion_hpp__
 
-#include <Eigen/Core>
+#include "eigenpy/fwd.hpp"
 #include <Eigen/Geometry>
-#include <boost/python.hpp>
 
 namespace eigenpy
 {
@@ -28,11 +27,11 @@ namespace eigenpy
     static void expose()
     {
       bp::def("toEulerAngles",&EulerAnglesConvertor::toEulerAngles,
-              bp::args("mat (dim 3x3)","a0","a1","a2"),
+              bp::args("rotation_matrix","a0","a1","a2"),
               "It returns the Euler-angles of the rotation matrix mat using the convention defined by the triplet (a0,a1,a2).");
       
       bp::def("fromEulerAngles",&EulerAnglesConvertor::fromEulerAngles,
-              bp::args("ea (vector of Euler angles)","a0","a1","a2"),
+              bp::args("euler_angles","a0","a1","a2"),
               "It returns the rotation matrix associated to the Euler angles using the convention defined by the triplet (a0,a1,a2).");
     }
     
