@@ -1,4 +1,4 @@
-From ace52f5585857a8df6d64caa5484d2adf5e784da Mon Sep 17 00:00:00 2001
+From ea667059d6a515db455da120884da7aa70ebd9cd Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:31 +0100
 Subject: [PATCH 2/5] Patch: Install config to share/cmake
@@ -21,5 +21,5 @@ index 76946e5..d029103 100644
  set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
 -- 
-2.17.1
+2.25.1
 

@@ -1,4 +1,4 @@
-From 54efc22f6dca0d41e7feb34cc83f849e3534a72d Mon Sep 17 00:00:00 2001
+From 7329412c27acd6f09929ecc0bd7914d37153954a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 24 Apr 2020 15:29:32 +0100
 Subject: [PATCH 4/5] Explicitly set Python3 for Debian Buster
@@ -21,5 +21,5 @@ index d3e7e17..75fef39 100644
  # Disable -Werror on Unix for now.
  SET(CXX_DISABLE_WERROR True)
 -- 
-2.17.1
+2.25.1
 
