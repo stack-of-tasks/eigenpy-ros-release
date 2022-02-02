@@ -27,8 +27,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   ENDIF()
 ENDIF()
 
-set(CMAKE_BUILD_TYPE "Release")
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
@@ -232,6 +230,9 @@ ADD_SOURCE_GROUP(${PROJECT_NAME}_SOURCES)
 
 # Install package for ROS
 install(FILES package.xml DESTINATION share/eigenpy)
+# Allows Colcon to find non-Ament packages when using workspace underlays
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} DESTINATION share/ament_index/resource_index/packages)
 
 # ----------------------------------------------------
 # --- PYTHON LIBRARY ---------------------------------
