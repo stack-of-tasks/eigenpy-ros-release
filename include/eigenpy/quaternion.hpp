@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2021 CNRS INRIA
+ * Copyright 2014-2022 CNRS INRIA
  */
 
 #ifndef __eigenpy_quaternion_hpp__
@@ -110,15 +110,21 @@ namespace eigenpy
     void visit(PyClass& cl) const 
     {
       cl
-      .def(bp::init<Matrix3>((bp::arg("self"),bp::arg("R")),
-                             "Initialize from rotation matrix.\n"
-                             "\tR : a rotation matrix 3x3.")[bp::return_value_policy<bp::return_by_value>()])
-      .def(bp::init<AngleAxis>((bp::arg("self"),bp::arg("aa")),
-                               "Initialize from an angle axis.\n"
-                               "\taa: angle axis object."))
-      .def(bp::init<Quaternion>((bp::arg("self"),bp::arg("quat")),
-                                "Copy constructor.\n"
-                                "\tquat: a quaternion.")[bp::return_value_policy<bp::return_by_value>()])
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::FromRotationMatrix,
+                                           bp::default_call_policies(),
+                                           (bp::arg("R"))),
+                                           "Initialize from rotation matrix.\n"
+                                           "\tR : a rotation matrix 3x3.")
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::FromAngleAxis,
+                                           bp::default_call_policies(),
+                                           (bp::arg("aa"))),
+                                           "Initialize from an angle axis.\n"
+                                           "\taa: angle axis object.")
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::FromOtherQuaternion,
+                                           bp::default_call_policies(),
+                                           (bp::arg("quat"))),
+           "Copy constructor.\n"
+           "\tquat: a quaternion.")
       .def("__init__",bp::make_constructor(&QuaternionVisitor::FromTwoVectors,
                                            bp::default_call_policies(),
                                            (bp::arg("u"),bp::arg("v"))),
@@ -130,11 +136,12 @@ namespace eigenpy
            "\tvec4 : a 4D vector representing quaternion coefficients in the order xyzw.")
       .def("__init__",bp::make_constructor(&QuaternionVisitor::DefaultConstructor),
            "Default constructor")
-      .def(bp::init<Scalar,Scalar,Scalar,Scalar>
-           ((bp::arg("self"),bp::arg("w"),bp::arg("x"),bp::arg("y"),bp::arg("z")),
+      .def("__init__",bp::make_constructor(&QuaternionVisitor::FromCoefficients,
+                                           bp::default_call_policies(),
+                                           (bp::arg("w"),bp::arg("x"),bp::arg("y"),bp::arg("z"))),
             "Initialize from coefficients.\n\n"
             "... note:: The order of coefficients is *w*, *x*, *y*, *z*. "
-            "The [] operator numbers them differently, 0...4 for *x* *y* *z* *w*!"))
+            "The [] operator numbers them differently, 0...4 for *x* *y* *z* *w*!")
       
       .add_property("x",
                     &QuaternionVisitor::getCoeff<0>,
@@ -178,16 +185,19 @@ namespace eigenpy
            "Returns the quaternion describing the inverse rotation.")
       .def("setIdentity",&Quaternion::setIdentity,
            bp::arg("self"),
-           "Set *this to the idendity rotation.",bp::return_self<>())
+           "Set *this to the identity rotation.",
+           bp::return_self<>())
       .def("norm",&Quaternion::norm,
            bp::arg("self"),
            "Returns the norm of the quaternion's coefficients.")
       .def("normalize",&Quaternion::normalize,
            bp::arg("self"),
-           "Normalizes the quaternion *this.")
-      .def("normalized",&Quaternion::normalized,
+           "Normalizes the quaternion *this.",
+           bp::return_self<>())
+      .def("normalized",&normalized,
            bp::arg("self"),
-           "Returns a normalized copy of *this.")
+           "Returns a normalized copy of *this.",
+           bp::return_value_policy<bp::manage_new_object>())
       .def("squaredNorm",&Quaternion::squaredNorm,
            bp::arg("self"),
            "Returns the squared norm of the quaternion's coefficients.")
@@ -245,15 +255,20 @@ namespace eigenpy
     }
   private:
     
+    static Quaternion * normalized(const Quaternion & self)
+    {
+      return new Quaternion(self.normalized());
+    }
+
     template<int i>
     static void setCoeff(Quaternion & self, Scalar value) { self.coeffs()[i] = value; }
-    
+
     template<int i>
     static Scalar getCoeff(Quaternion & self) { return self.coeffs()[i]; }
-    
+
     static Quaternion & setFromTwoVectors(Quaternion & self, const Vector3 & a, const Vector3 & b)
     { return self.setFromTwoVectors(a,b); }
-    
+
     template<typename OtherQuat>
     static Quaternion & assign(Quaternion & self, const OtherQuat & quat)
     { return self = quat; }
@@ -263,10 +278,28 @@ namespace eigenpy
       Quaternion* q(new Quaternion); q->setIdentity();
       return q;
     }
-    
-    static Quaternion* FromTwoVectors(const Vector3& u, const Vector3& v)
+
+    static Quaternion* FromCoefficients(Scalar w, Scalar x, Scalar y, Scalar z)
+    {
+      Quaternion* q(new Quaternion(w, x, y, z));
+      return q;
+    }
+
+    static Quaternion* FromAngleAxis(const AngleAxis& aa)
+    {
+      Quaternion* q(new Quaternion(aa));
+      return q;
+    }
+
+    static Quaternion* FromTwoVectors(const Eigen::Ref<Vector3> u, const Eigen::Ref<Vector3> v)
     {
       Quaternion* q(new Quaternion); q->setFromTwoVectors(u,v);
+      return q;
+    }
+    
+    static Quaternion* FromOtherQuaternion(const Quaternion & other)
+    {
+      Quaternion* q(new Quaternion(other));
       return q;
     }
     
@@ -274,13 +307,19 @@ namespace eigenpy
     {
       return new Quaternion;
     }
-    
+
     static Quaternion* FromOneVector(const Eigen::Ref<Vector4> v)
     {
       Quaternion* q(new Quaternion(v[3],v[0],v[1],v[2]));
       return q;
     }
-  
+
+    static Quaternion* FromRotationMatrix(const Eigen::Ref<Matrix3> R)
+    {
+      Quaternion* q(new Quaternion(R));
+      return q;
+    }
+
     static bool __eq__(const Quaternion & u, const Quaternion & v)
     {
       return u.coeffs() == v.coeffs();
