@@ -1,3 +1,26 @@
+## eigenpy (foxy) - 2.6.11-1
+
+The packages in the `eigenpy` repository were released into the `foxy` distro by running `/usr/bin/bloom-release -r foxy eigenpy` on `Fri, 25 Feb 2022 10:56:10 -0000`
+
+The `eigenpy` package was released.
+
+Version of package(s) in repository `eigenpy`:
+
+- upstream repository: https://github.com/stack-of-tasks/eigenpy.git
+- release repository: https://github.com/stack-of-tasks/eigenpy-ros-release.git
+- rosdistro version: `2.6.10-3`
+- old version: `2.6.10-3`
+- new version: `2.6.11-1`
+
+Versions of tools used:
+
+- bloom version: `0.10.7`
+- catkin_pkg version: `0.4.24`
+- rosdep version: `0.21.0`
+- rosdistro version: `0.8.3`
+- vcstools version: `0.1.42`
+
+
 ## eigenpy (noetic) - 2.6.11-1
 
 The packages in the `eigenpy` repository were released into the `noetic` distro by running `/usr/bin/bloom-release -r noetic eigenpy` on `Fri, 25 Feb 2022 10:47:51 -0000`
