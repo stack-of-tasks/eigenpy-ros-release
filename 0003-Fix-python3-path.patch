@@ -1,4 +1,4 @@
-From 085e4a5304dcb27fc72c27e1cb8d62b5e46aad4d Mon Sep 17 00:00:00 2001
+From a149a9672b4cc50cd07c192d951bcadb4c554cc6 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 2 Feb 2022 22:48:22 +0000
 Subject: [PATCH 3/3] Fix python3 path
