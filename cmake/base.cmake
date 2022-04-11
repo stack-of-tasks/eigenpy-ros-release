@@ -1,4 +1,4 @@
-# Copyright (C) 2008-2019 LAAS-CNRS, JRL AIST-CNRS, INRIA.
+# Copyright (C) 2008-2022 LAAS-CNRS, JRL AIST-CNRS, INRIA.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -87,6 +87,12 @@
 #
 #     This variable provides the full path pointing to the JRL cmake module.
 #
+#   .. variable:: PROJECT_COMPATIBILITY_VERSION
+#
+#     If set, this variable defines COMPATIBILITY version of the project (AnyNewerVersion|SameMajorVersion|SameMinorVersion|ExactVersion).
+#     The default value is SameMajorVersion.
+#     See https://cmake.org/cmake/help/latest/module/CMakePackageConfigHelpers.html#generating-a-package-version-file for further details.
+#
 #   Macros
 #   ------
 #
@@ -114,6 +120,7 @@ INCLUDE(${CMAKE_CURRENT_LIST_DIR}/version-script.cmake)
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/test.cmake)
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/oscheck.cmake)
 INCLUDE(${CMAKE_CURRENT_LIST_DIR}/cxx-standard.cmake)
+INCLUDE(${CMAKE_CURRENT_LIST_DIR}/coverage.cmake)
 
  # --------- #
  # Constants #
@@ -280,6 +287,7 @@ MACRO(SETUP_PROJECT_FINALIZE)
   ENDIF(INSTALL_PKG_CONFIG_FILE)
   _SETUP_PROJECT_DOCUMENTATION_FINALIZE()
   _SETUP_PROJECT_HEADER_FINALIZE()
+  _SETUP_COVERAGE_FINALIZE()
   _SETUP_DEBIAN()
   # Install data if needed
   _INSTALL_PROJECT_DATA()
