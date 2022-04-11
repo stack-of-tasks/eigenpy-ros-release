@@ -1,6 +1,6 @@
 #
 # Copyright (c) 2014-2019 CNRS
-# Copyright (c) 2018-2021 INRIA
+# Copyright (c) 2018-2022 INRIA
 #
 
 CMAKE_MINIMUM_REQUIRED(VERSION 3.1)
@@ -11,6 +11,7 @@ SET(PROJECT_URL "http://github.com/stack-of-tasks/eigenpy")
 SET(PROJECT_USE_CMAKE_EXPORT TRUE)
 SET(PROJECT_USE_KEYWORD_LINK_LIBRARIES TRUE)
 SET(PROJECT_CUSTOM_HEADER_EXTENSION "hpp")
+SET(PROJECT_COMPATIBILITY_VERSION AnyNewerVersion)
 
 # Check if the submodule cmake have been initialized
 set(JRL_CMAKE_MODULES "${CMAKE_CURRENT_LIST_DIR}/cmake")
@@ -25,16 +26,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
     FetchContent_MakeAvailable("jrl-cmakemodules")
     FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
   ENDIF()
-ENDIF()
-
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-IF(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-ENDIF()
-IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  SET(CMAKE_INSTALL_LIBDIR "lib/")
 ENDIF()
 
 # Disable -Werror on Unix for now.

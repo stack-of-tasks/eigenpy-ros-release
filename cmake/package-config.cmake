@@ -1,4 +1,4 @@
-# Copyright (C) 2016  LAAS-CNRS, JRL AIST-CNRS and others.
+# Copyright (C) 2016-2022  LAAS-CNRS, JRL AIST-CNRS and others.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -128,7 +128,7 @@ MACRO(SETUP_PROJECT_PACKAGE_FINALIZE)
 #   * <prefix>/lib/cmake/<PROJECT-NAME>
 #   * <prefix>/lib/
 #   * <prefix>/include/
-set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_DATAROOTDIR}/${PROJECT_NAME}/cmake")
+set(CONFIG_INSTALL_DIR "${CMAKE_INSTALL_LIBDIR}/cmake/${PROJECT_NAME}")
 set(INCLUDE_INSTALL_DIR "include")
 set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
 
@@ -163,8 +163,11 @@ endif()
 
 # Configure '<PROJECT-NAME>ConfigVersion.cmake'
 # Note: PROJECT_VERSION is used as a VERSION
+if(NOT PROJECT_COMPATIBILITY_VERSION)
+  set(PROJECT_COMPATIBILITY_VERSION SameMajorVersion)
+endif()
 write_basic_package_version_file(
-    "${VERSION_CONFIG}" VERSION ${PROJECT_VERSION} COMPATIBILITY SameMajorVersion
+    "${VERSION_CONFIG}" VERSION ${PROJECT_VERSION} COMPATIBILITY ${PROJECT_COMPATIBILITY_VERSION}
 )
 
 # Configure '<PROJECT-NAME>Config.cmake'
