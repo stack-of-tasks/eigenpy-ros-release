@@ -1,4 +1,4 @@
-From aad4da2bd9574314a28179a01757cb3e4804b335 Mon Sep 17 00:00:00 2001
+From 4c7f8c0a73a61dfbb9c5e4c55907a85f6fde2a0d Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:14:50 +0100
 Subject: [PATCH 5/6] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
@@ -8,7 +8,7 @@ Subject: [PATCH 5/6] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index 13031b1..ec0a958 100644
+index 46bb25a..d175e98 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -34,7 +34,7 @@ MACRO(_SETUP_PROJECT_PACKAGE_INIT)
