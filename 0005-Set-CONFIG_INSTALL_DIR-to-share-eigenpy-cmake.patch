@@ -1,4 +1,4 @@
-From 4c7f8c0a73a61dfbb9c5e4c55907a85f6fde2a0d Mon Sep 17 00:00:00 2001
+From 4f1b4d622b84e3079118ed48938ccc23b3c45aac Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:14:50 +0100
 Subject: [PATCH 5/6] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
