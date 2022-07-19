@@ -1,4 +1,4 @@
-From 8f9f995c00ce242b3a440ac75e52c4c0070dba7e Mon Sep 17 00:00:00 2001
+From 1ca3f78f19c64ae5e0a28f8477b2d1d85b5b59d7 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 24 Apr 2020 15:29:32 +0100
 Subject: [PATCH 2/6] Explicitly set Python3 for Debian Buster
