@@ -68,8 +68,8 @@ ELSE(WIN32)
   SET(LINK create_symlink)
 ENDIF(WIN32)
 
+set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
 FINDPYTHON()
-FIND_NUMPY()
 
 IF(WIN32)
   LINK_DIRECTORIES(${PYTHON_LIBRARY_DIRS})
@@ -200,12 +200,17 @@ SET(${PROJECT_NAME}_SOURCES
 ADD_LIBRARY(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES} ${${PROJECT_NAME}_HEADERS})
 TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME}
   SYSTEM PUBLIC
-  ${Boost_INCLUDE_DIRS}
-  ${EIGEN3_INCLUDE_DIR}
-  ${PYTHON_INCLUDE_DIRS}
-  ${NUMPY_INCLUDE_DIRS}
   $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
+
+MODERNIZE_TARGET_LINK_LIBRARIES(${PROJECT_NAME} SCOPE PUBLIC
+  TARGETS Eigen3::Eigen
+  INCLUDE_DIRS ${EIGEN3_INCLUDE_DIR})
+
+MODERNIZE_TARGET_LINK_LIBRARIES(${PROJECT_NAME} SCOPE PUBLIC
+  TARGETS Python3::NumPy
+  INCLUDE_DIRS ${NUMPY_INCLUDE_DIR})
+TARGET_INCLUDE_DIRECTORIES(${PROJECT_NAME} SYSTEM PRIVATE ${PYTHON_INCLUDE_DIRS})
 
 IF(SUFFIX_SO_VERSION)
   SET_TARGET_PROPERTIES(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
@@ -234,6 +239,10 @@ install(FILES package.xml DESTINATION share/eigenpy)
 # Allows Colcon to find non-Ament packages when using workspace underlays
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} "")
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/ament_index/resource_index/packages/${PROJECT_NAME} DESTINATION share/ament_index/resource_index/packages)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv "prepend-non-duplicate;AMENT_PREFIX_PATH;")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/ament_prefix_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv "prepend-non-duplicate;PYTHONPATH;${PYTHON_SITELIB}")
+install(FILES ${CMAKE_CURRENT_BINARY_DIR}/share/${PROJECT_NAME}/hook/python_path.dsv DESTINATION share/${PROJECT_NAME}/hook)
 
 # ----------------------------------------------------
 # --- PYTHON LIBRARY ---------------------------------
