@@ -32,14 +32,6 @@ ENDIF()
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
 
-# Patches
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
@@ -76,7 +68,12 @@ ELSE(WIN32)
   SET(LINK create_symlink)
 ENDIF(WIN32)
 
-set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+if(CMAKE_CROSSCOMPILING)
+  set(PYTHON_COMPONENTS Interpreter NumPy)
+else()
+  set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+endif()
+set(PYTHON_EXPORT_DEPENDENCY ON)
 FINDPYTHON()
 
 IF(WIN32)
