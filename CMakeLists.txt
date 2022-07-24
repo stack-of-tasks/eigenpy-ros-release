@@ -28,16 +28,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   ENDIF()
 ENDIF()
 
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-IF(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-ENDIF()
-IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  SET(CMAKE_INSTALL_LIBDIR "lib/")
-ENDIF()
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
@@ -78,7 +68,12 @@ ELSE(WIN32)
   SET(LINK create_symlink)
 ENDIF(WIN32)
 
-set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+if(CMAKE_CROSSCOMPILING)
+  set(PYTHON_COMPONENTS Interpreter NumPy)
+else()
+  set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+endif()
+set(PYTHON_EXPORT_DEPENDENCY ON)
 FINDPYTHON()
 
 IF(WIN32)
