@@ -28,8 +28,6 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   ENDIF()
 ENDIF()
 
-set(CMAKE_BUILD_TYPE "Release")
-
 # Disable -Werror on Unix for now.
 SET(CXX_DISABLE_WERROR True)
 SET(CMAKE_VERBOSE_MAKEFILE True)
@@ -70,7 +68,12 @@ ELSE(WIN32)
   SET(LINK create_symlink)
 ENDIF(WIN32)
 
-set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+if(CMAKE_CROSSCOMPILING)
+  set(PYTHON_COMPONENTS Interpreter NumPy)
+else()
+  set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
+endif()
+set(PYTHON_EXPORT_DEPENDENCY ON)
 FINDPYTHON()
 
 IF(WIN32)
