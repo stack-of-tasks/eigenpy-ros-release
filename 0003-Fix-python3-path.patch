@@ -1,17 +1,17 @@
-From e2c80f40949c0f102bce349fc5caa94fd440911c Mon Sep 17 00:00:00 2001
+From cf53b3a0f4d5be4b9c1a879a1472b2ea7002e070 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 2 Feb 2022 22:48:22 +0000
-Subject: [PATCH 3/3] Fix python3 path
+Subject: [PATCH 3/4] Fix python3 path
 
 ---
  CMakeLists.txt | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index d165f62..fa8bbe7 100644
+index d8905e9..c40715f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -37,7 +37,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
+@@ -40,7 +40,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
    set(CMAKE_BUILD_TYPE Release)
  endif()
  if(NOT DEFINED PYTHON_EXECUTABLE)
