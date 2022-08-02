@@ -63,6 +63,10 @@ include("${JRL_CMAKE_MODULES}/base.cmake")
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
 
+# Required for ROS2
+set(PYTHON_DEB_LAYOUT OFF)
+set(PYTHON_STANDARD_LAYOUT ON)
+
 include("${JRL_CMAKE_MODULES}/boost.cmake")
 include("${JRL_CMAKE_MODULES}/python.cmake")
 include("${JRL_CMAKE_MODULES}/ide.cmake")
