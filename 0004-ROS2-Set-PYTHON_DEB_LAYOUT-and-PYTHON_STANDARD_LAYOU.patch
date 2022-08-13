@@ -1,7 +1,7 @@
-From 18d5e0c8481515388149d6525dc0660b9afae3ad Mon Sep 17 00:00:00 2001
+From 4f13c6b0853b05a96131b6e2390a8431effab594 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 2 Aug 2022 14:45:24 +0100
-Subject: [PATCH 4/4] ROS2: Set PYTHON_DEB_LAYOUT and PYTHON_STANDARD_LAYOUT
+Subject: [PATCH 4/5] ROS2: Set PYTHON_DEB_LAYOUT and PYTHON_STANDARD_LAYOUT
 
 ---
  CMakeLists.txt | 4 ++++

@@ -1,7 +1,7 @@
-From cf53b3a0f4d5be4b9c1a879a1472b2ea7002e070 Mon Sep 17 00:00:00 2001
+From b6c24439f5ef23143610de083a1919d8178f60d8 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 2 Feb 2022 22:48:22 +0000
-Subject: [PATCH 3/4] Fix python3 path
+Subject: [PATCH 3/5] Fix python3 path
 
 ---
  CMakeLists.txt | 2 +-

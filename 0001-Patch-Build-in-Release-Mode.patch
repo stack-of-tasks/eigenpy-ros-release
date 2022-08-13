@@ -1,7 +1,7 @@
-From 0199cdc2a34a1ee972b39a2be1c289a5848ae2ba Mon Sep 17 00:00:00 2001
+From 81e024cfe851c6fbaec7efbe047017121e850a6b Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
-Subject: [PATCH 1/4] Patch: Build in Release Mode
+Subject: [PATCH 1/5] Patch: Build in Release Mode
 
 ---
  CMakeLists.txt | 5 +++++
