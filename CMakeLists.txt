@@ -35,21 +35,12 @@ endif()
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
-# Patches
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
-option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 if(DEFINED BUILD_UNIT_TESTS)
   message(
@@ -89,7 +80,7 @@ else()
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
 endif()
 set(PYTHON_EXPORT_DEPENDENCY ON)
-findpython()
+findpython(REQUIRED)
 
 if(WIN32)
   link_directories(${PYTHON_LIBRARY_DIRS})
@@ -226,11 +217,10 @@ modernize_target_link_libraries(
   SCOPE
   PUBLIC
   TARGETS
-  Python3::NumPy
+  Python${PYTHON_VERSION_MAJOR}::NumPy
   INCLUDE_DIRS
-  ${NUMPY_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM
-                           PRIVATE ${PYTHON_INCLUDE_DIRS})
+  ${NUMPY_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR})
 
 if(SUFFIX_SO_VERSION)
   set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
