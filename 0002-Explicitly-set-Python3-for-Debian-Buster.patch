@@ -1,4 +1,4 @@
-From 1a08e2168bde0897e5744b2a82238e62f968d165 Mon Sep 17 00:00:00 2001
+From d9575abeadd17e3a5558b4d44091c00f6e1e1007 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 24 Apr 2020 15:29:32 +0100
 Subject: [PATCH 2/6] Explicitly set Python3 for Debian Buster
@@ -8,18 +8,18 @@ Subject: [PATCH 2/6] Explicitly set Python3 for Debian Buster
  1 file changed, 2 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 2f5f60a..3737cac 100644
+index bc25e40..a105aae 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -29,6 +29,8 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
- ENDIF()
+@@ -32,6 +32,8 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+ endif()
  
  set(CMAKE_BUILD_TYPE "Release")
 +set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
 +
  
  # Disable -Werror on Unix for now.
- SET(CXX_DISABLE_WERROR True)
+ set(CXX_DISABLE_WERROR True)
 -- 
 2.25.1
 

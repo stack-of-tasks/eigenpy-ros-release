@@ -1,4 +1,4 @@
-From 187c7fd1f9731dc8011781f587d1cb6d9e926aee Mon Sep 17 00:00:00 2001
+From 85f753db12efbd476f0fd8abdfb64d3e33cccc9a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:17:07 +0100
 Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
@@ -8,12 +8,12 @@ Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
  1 file changed, 9 insertions(+), 3 deletions(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index aab4f84..6ea07c3 100644
+index 737b0b7..6a9076a 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -28,9 +28,15 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
-   ENDIF()
- ENDIF()
+@@ -31,9 +31,15 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+   endif()
+ endif()
  
 -set(CMAKE_BUILD_TYPE "Release")
 -set(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
@@ -29,7 +29,7 @@ index aab4f84..6ea07c3 100644
 +ENDIF()
  
  # Disable -Werror on Unix for now.
- SET(CXX_DISABLE_WERROR True)
+ set(CXX_DISABLE_WERROR True)
 -- 
 2.25.1
 

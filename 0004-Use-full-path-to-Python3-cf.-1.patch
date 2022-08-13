@@ -1,4 +1,4 @@
-From 8d70073ec4023c0aebeb99b9890bc0cd8dc40afa Mon Sep 17 00:00:00 2001
+From 902a07524364f76878558d1434cc800a4f28ff48 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 26 Jan 2021 23:32:03 +0000
 Subject: [PATCH 4/6] Use full path to Python3, cf. #1
@@ -8,11 +8,11 @@ Subject: [PATCH 4/6] Use full path to Python3, cf. #1
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index a3e5c01..aab4f84 100644
+index 6368ee2..737b0b7 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
-@@ -29,7 +29,7 @@ IF(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
- ENDIF()
+@@ -32,7 +32,7 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
+ endif()
  
  set(CMAKE_BUILD_TYPE "Release")
 -set(PYTHON_EXECUTABLE "python3") # specify python3 so that Debian Buster passes
