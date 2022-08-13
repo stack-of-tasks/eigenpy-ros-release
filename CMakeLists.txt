@@ -49,6 +49,7 @@ endif()
 # ----------------------------------------------------
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
+option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 if(DEFINED BUILD_UNIT_TESTS)
   message(
@@ -62,10 +63,6 @@ endif(DEFINED BUILD_UNIT_TESTS)
 include("${JRL_CMAKE_MODULES}/base.cmake")
 compute_project_args(PROJECT_ARGS LANGUAGES CXX)
 project(${PROJECT_NAME} ${PROJECT_ARGS})
-
-# Required for ROS2
-set(PYTHON_DEB_LAYOUT OFF)
-set(PYTHON_STANDARD_LAYOUT ON)
 
 include("${JRL_CMAKE_MODULES}/boost.cmake")
 include("${JRL_CMAKE_MODULES}/python.cmake")
@@ -92,7 +89,7 @@ else()
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
 endif()
 set(PYTHON_EXPORT_DEPENDENCY ON)
-findpython()
+findpython(REQUIRED)
 
 if(WIN32)
   link_directories(${PYTHON_LIBRARY_DIRS})
@@ -229,11 +226,10 @@ modernize_target_link_libraries(
   SCOPE
   PUBLIC
   TARGETS
-  Python3::NumPy
+  Python${PYTHON_VERSION_MAJOR}::NumPy
   INCLUDE_DIRS
-  ${NUMPY_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM
-                           PRIVATE ${PYTHON_INCLUDE_DIRS})
+  ${NUMPY_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR})
 
 if(SUFFIX_SO_VERSION)
   set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
