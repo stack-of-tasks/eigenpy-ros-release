@@ -80,7 +80,7 @@ else()
   set(PYTHON_COMPONENTS Interpreter Development.Module NumPy)
 endif()
 set(PYTHON_EXPORT_DEPENDENCY ON)
-findpython()
+findpython(REQUIRED)
 
 if(WIN32)
   link_directories(${PYTHON_LIBRARY_DIRS})
@@ -217,11 +217,10 @@ modernize_target_link_libraries(
   SCOPE
   PUBLIC
   TARGETS
-  Python3::NumPy
+  Python${PYTHON_VERSION_MAJOR}::NumPy
   INCLUDE_DIRS
-  ${NUMPY_INCLUDE_DIR})
-target_include_directories(${PROJECT_NAME} SYSTEM
-                           PRIVATE ${PYTHON_INCLUDE_DIRS})
+  ${NUMPY_INCLUDE_DIRS}
+  ${PYTHON_INCLUDE_DIR})
 
 if(SUFFIX_SO_VERSION)
   set_target_properties(${PROJECT_NAME} PROPERTIES SOVERSION ${PROJECT_VERSION})
