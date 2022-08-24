@@ -125,11 +125,13 @@ macro(SEARCH_FOR_BOOST_PYTHON)
   endif(NOT BOOST_PYTHON_FOUND)
 
   if(PYTHON_EXPORT_DEPENDENCY)
-    add_project_dependency(Boost ${BOOST_PYTHON_REQUIRED} COMPONENTS
-                           ${BOOST_PYTHON_NAME})
-  else()
-    find_package(Boost ${BOOST_PYTHON_REQUIRED} COMPONENTS ${BOOST_PYTHON_NAME})
+    install_jrl_cmakemodules_dir("boost")
+    install_jrl_cmakemodules_file("boost.cmake")
+    set(PYTHON_EXPORT_DEPENDENCY_MACROS
+        "${PYTHON_EXPORT_DEPENDENCY_MACROS}\nSEARCH_FOR_BOOST_PYTHON(${BOOST_PYTHON_REQUIRED})"
+    )
   endif()
+  find_package(Boost ${BOOST_PYTHON_REQUIRED} COMPONENTS ${BOOST_PYTHON_NAME})
   string(TOUPPER ${BOOST_PYTHON_NAME} UPPERCOMPONENT)
 
   list(APPEND LOGGING_WATCHED_VARIABLES Boost_${UPPERCOMPONENT}_FOUND
