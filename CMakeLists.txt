@@ -35,21 +35,12 @@ endif()
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
-# Patches
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
-option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 if(DEFINED BUILD_UNIT_TESTS)
   message(
@@ -249,12 +240,12 @@ target_link_boost_python(${PROJECT_NAME} PUBLIC)
 install(
   TARGETS ${PROJECT_NAME}
   EXPORT ${TARGETS_EXPORT_NAME}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
   INCLUDES
-  DESTINATION ${CMAKE_INSTALL_FULL_INCLUDEDIR}
-  LIBRARY DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-  ARCHIVE DESTINATION ${CMAKE_INSTALL_FULL_LIBDIR}
-  RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR})
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
 
 add_header_group(${PROJECT_NAME}_HEADERS)
 add_source_group(${PROJECT_NAME}_SOURCES)
