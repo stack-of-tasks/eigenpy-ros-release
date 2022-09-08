@@ -1,4 +1,4 @@
-From 3ff80db981e5e8a852b1fe54cfea7c292e3ab41c Mon Sep 17 00:00:00 2001
+From 201d6754bf1a918a00c3e63368431b451374dd0a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 24 Apr 2020 15:29:32 +0100
 Subject: [PATCH 2/5] Explicitly set Python3 for Debian Buster
@@ -8,7 +8,7 @@ Subject: [PATCH 2/5] Explicitly set Python3 for Debian Buster
  1 file changed, 3 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 79e0c7c..9ea14d0 100644
+index 83ef0ce..df9c044 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -39,6 +39,9 @@ set(CMAKE_VERBOSE_MAKEFILE True)
