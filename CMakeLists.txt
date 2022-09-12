@@ -31,8 +31,6 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   endif()
 endif()
 
-set(CMAKE_BUILD_TYPE "Release")
-
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
@@ -101,7 +99,7 @@ add_project_dependency(Eigen3 REQUIRED PKG_CONFIG_REQUIRES "eigen3 >= 3.0.5")
 set_boost_default_options()
 export_boost_default_options()
 find_package(Boost REQUIRED)
-search_for_boost_python()
+search_for_boost_python(REQUIRED)
 
 # ----------------------------------------------------
 # --- INCLUDE ----------------------------------------
