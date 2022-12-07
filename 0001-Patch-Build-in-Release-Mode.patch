@@ -1,4 +1,4 @@
-From 2d27057077ebc8e8d2f4a74757a73a0d3fc433e7 Mon Sep 17 00:00:00 2001
+From 3e1f4e85cbcb3c4de18bbfae11029701885827d7 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 7 Apr 2020 10:50:17 +0100
 Subject: [PATCH 1/5] Patch: Build in Release Mode
@@ -8,7 +8,7 @@ Subject: [PATCH 1/5] Patch: Build in Release Mode
  1 file changed, 5 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index f437ee6..f9b1824 100644
+index cc4b50a..c502852 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -35,6 +35,11 @@ endif()
