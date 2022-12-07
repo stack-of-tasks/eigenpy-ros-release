@@ -31,16 +31,6 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
   endif()
 endif()
 
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-IF(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-ENDIF()
-IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  SET(CMAKE_INSTALL_LIBDIR "lib/")
-ENDIF()
-
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
@@ -145,6 +135,7 @@ set(${PROJECT_NAME}_HEADERS
     include/eigenpy/exception.hpp
     include/eigenpy/scalar-conversion.hpp
     include/eigenpy/expose.hpp
+    include/eigenpy/copyable.hpp
     include/eigenpy/details.hpp
     include/eigenpy/fwd.hpp
     include/eigenpy/eigen-allocator.hpp
@@ -164,6 +155,9 @@ set(${PROJECT_NAME}_HEADERS
     include/eigenpy/user-type.hpp
     include/eigenpy/ufunc.hpp
     include/eigenpy/register.hpp
+    include/eigenpy/std-map.hpp
+    include/eigenpy/std-vector.hpp
+    include/eigenpy/pickle-vector.hpp
     include/eigenpy/stride.hpp
     include/eigenpy/swig.hpp
     include/eigenpy/version.hpp)
@@ -204,6 +198,7 @@ set(${PROJECT_NAME}_SOURCES
     src/angle-axis.cpp
     src/quaternion.cpp
     src/geometry-conversion.cpp
+    src/std-vector.cpp
     src/version.cpp)
 
 add_library(${PROJECT_NAME} SHARED ${${PROJECT_NAME}_SOURCES}
