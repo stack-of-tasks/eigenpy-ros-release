@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2022 INRIA
+# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2023 INRIA
 #
 
 cmake_minimum_required(VERSION 3.1)
@@ -30,8 +30,6 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
     FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
   endif()
 endif()
-
-set(CMAKE_BUILD_TYPE "Release")
 
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
@@ -132,6 +130,7 @@ set(${PROJECT_NAME}_HEADERS
     ${${PROJECT_NAME}_UTILS_HEADERS}
     ${${PROJECT_NAME}_SOLVERS_HEADERS}
     ${${PROJECT_NAME}_DECOMPOSITIONS_HEADERS}
+    include/eigenpy/alignment.hpp
     include/eigenpy/computation-info.hpp
     include/eigenpy/eigenpy.hpp
     include/eigenpy/exception.hpp
