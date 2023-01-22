@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2022 INRIA
+# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2023 INRIA
 #
 
 cmake_minimum_required(VERSION 3.1)
@@ -35,21 +35,12 @@ endif()
 set(CXX_DISABLE_WERROR True)
 set(CMAKE_VERBOSE_MAKEFILE True)
 
-# Patches
-if(NOT DEFINED CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Release)
-endif()
-if(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-endif()
-
 # ----------------------------------------------------
 # --- OPTIONS  ---------------------------------------
 # Need to be set before including base.cmake
 # ----------------------------------------------------
 option(INSTALL_DOCUMENTATION "Generate and install the documentation" OFF)
 option(SUFFIX_SO_VERSION "Suffix library name with its version" OFF)
-option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" ON)
 
 if(DEFINED BUILD_UNIT_TESTS)
   message(
@@ -139,6 +130,7 @@ set(${PROJECT_NAME}_HEADERS
     ${${PROJECT_NAME}_UTILS_HEADERS}
     ${${PROJECT_NAME}_SOLVERS_HEADERS}
     ${${PROJECT_NAME}_DECOMPOSITIONS_HEADERS}
+    include/eigenpy/alignment.hpp
     include/eigenpy/computation-info.hpp
     include/eigenpy/eigenpy.hpp
     include/eigenpy/exception.hpp
