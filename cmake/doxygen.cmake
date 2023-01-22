@@ -494,6 +494,18 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     message(
       WARNING "Failed to find Doxygen, documentation will not be generated.")
   else(NOT DOXYGEN_FOUND)
+    get_directory_property(has_parent_scope PARENT_DIRECTORY)
+    set(JRL_CMAKEMODULE_DOXYFILE_PATH "${PROJECT_BINARY_DIR}/doc/Doxyfile")
+    if(has_parent_scope)
+      set(DOXYGEN_FOUND
+          ${DOXYGEN_FOUND}
+          PARENT_SCOPE)
+      set(JRL_CMAKEMODULE_DOXYFILE_PATH
+          ${JRL_CMAKEMODULE_DOXYFILE_PATH}
+          PARENT_SCOPE)
+    endif(has_parent_scope)
+    unset(has_parent_scope)
+
     _setup_doxygen_default_options()
     # Generate variable to be substitued in Doxyfile.in for dot use.
     if(DOXYGEN_DOT_FOUND)
@@ -506,13 +518,13 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       # install, so put the target in ALL instead.
       add_custom_target(
         doc ALL
-        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+        COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
     else(MSVC)
       add_custom_target(
         doc
-        COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+        COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
 
@@ -525,20 +537,19 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       add_custom_target(
         generate-template-css
         COMMAND
-          ${DOXYGEN_EXECUTABLE} -w html
-          ${CMAKE_CURRENT_BINARY_DIR}/doc/header.html
-          ${CMAKE_CURRENT_BINARY_DIR}/doc/footer.html
-          ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen.css
-        BYPRODUCTS ${CMAKE_CURRENT_BINARY_DIR}/doc/header.html
-                   ${CMAKE_CURRENT_BINARY_DIR}/doc/footer.html
-                   ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen.css)
+          ${DOXYGEN_EXECUTABLE} -w html ${PROJECT_BINARY_DIR}/doc/header.html
+          ${PROJECT_BINARY_DIR}/doc/footer.html
+          ${PROJECT_BINARY_DIR}/doc/doxygen.css
+        BYPRODUCTS ${PROJECT_BINARY_DIR}/doc/header.html
+                   ${PROJECT_BINARY_DIR}/doc/footer.html
+                   ${PROJECT_BINARY_DIR}/doc/doxygen.css)
       add_dependencies(doc generate-template-css)
       _set_if_undefined(DOXYGEN_HTML_HEADER
-                        "${CMAKE_CURRENT_BINARY_DIR}/doc/header.html")
+                        "${PROJECT_BINARY_DIR}/doc/header.html")
       _set_if_undefined(DOXYGEN_HTML_FOOTER
-                        "${CMAKE_CURRENT_BINARY_DIR}/doc/footer.html")
+                        "${PROJECT_BINARY_DIR}/doc/footer.html")
       _set_if_undefined(DOXYGEN_HTML_STYLESHEET
-                        "${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen.css")
+                        "${PROJECT_BINARY_DIR}/doc/doxygen.css")
     else(DOXYGEN_USE_TEMPLATE_CSS)
       _set_if_undefined(DOXYGEN_HTML_FOOTER
                         "${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/footer.html")
@@ -547,9 +558,9 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     endif(DOXYGEN_USE_TEMPLATE_CSS)
 
     add_custom_command(
-      OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-             ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen-html
-      COMMAND ${DOXYGEN_EXECUTABLE} Doxyfile
+      OUTPUT ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
+             ${PROJECT_BINARY_DIR}/doc/doxygen-html
+      COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
       WORKING_DIRECTORY doc
       COMMENT "Generating Doxygen documentation")
 
@@ -558,23 +569,23 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
       DIRECTORY
       APPEND
       PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-               ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
-               ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen.log
-               ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen-html)
+               ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
+               ${PROJECT_BINARY_DIR}/doc/doxygen.log
+               ${PROJECT_BINARY_DIR}/doc/doxygen-html)
 
     # Install MathJax minimal version.
     if("${DOXYGEN_USE_MATHJAX}" STREQUAL "YES")
       file(COPY ${PROJECT_JRL_CMAKE_MODULE_DIR}/doxygen/MathJax
-           DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen-html)
+           DESTINATION ${PROJECT_BINARY_DIR}/doc/doxygen-html)
     endif()
 
     # Install generated files.
     if(INSTALL_DOCUMENTATION)
-      if(EXISTS ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag)
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
+      if(EXISTS ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag)
+        install(FILES ${PROJECT_BINARY_DIR}/doc/${PROJECT_NAME}.doxytag
                 DESTINATION ${CMAKE_INSTALL_DOCDIR}/doxygen-html)
       endif()
-      install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doc/doxygen-html
+      install(DIRECTORY ${PROJECT_BINARY_DIR}/doc/doxygen-html
               DESTINATION ${CMAKE_INSTALL_DOCDIR})
 
       if(EXISTS ${PROJECT_SOURCE_DIR}/doc/pictures)
@@ -694,25 +705,24 @@ macro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
           "${DOXYGEN_EXAMPLE_PATH} \"${PROJECT_SOURCE_DIR}/tests\"")
     endif()
     set(DOXYGEN_INCLUDE_PATH
-        "${DOXYGEN_INCLUDE_PATH} \"${CMAKE_BINARY_DIR}/include\"")
+        "${DOXYGEN_INCLUDE_PATH} \"${PROJECT_BINARY_DIR}/include\"")
 
     # Generate Doxyfile and Doxyfile.extra.
     if(EXISTS ${PROJECT_SOURCE_DIR}/doc/Doxyfile.extra.in)
       configure_file(${PROJECT_SOURCE_DIR}/doc/Doxyfile.extra.in
-                     ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile.extra @ONLY)
+                     ${PROJECT_BINARY_DIR}/doc/Doxyfile.extra @ONLY)
       # Generate Doxyfile.
-      _setup_doxygen_config_file("${CMAKE_BINARY_DIR}/doc/Doxyfile")
-      file(STRINGS ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile.extra
-           doxyfile_extra)
+      _setup_doxygen_config_file(${JRL_CMAKEMODULE_DOXYFILE_PATH})
+      file(STRINGS ${PROJECT_BINARY_DIR}/doc/Doxyfile.extra doxyfile_extra)
       foreach(x ${doxyfile_extra})
-        file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/doc/Doxyfile ${x} "\n")
+        file(APPEND ${JRL_CMAKEMODULE_DOXYFILE_PATH} ${x} "\n")
       endforeach(x in doxyfile_extra)
     else()
       # This is kept for bacward compatibility. It was the only thing left in
       # doxygen/Doxyfile.extra.in
       set(DOXYGEN_IMAGE_PATH "${PROJECT_SOURCE_DIR}/doc/pictures")
       # Generate Doxyfile.
-      _setup_doxygen_config_file("${CMAKE_BINARY_DIR}/doc/Doxyfile")
+      _setup_doxygen_config_file(${JRL_CMAKEMODULE_DOXYFILE_PATH})
     endif()
   endif(DOXYGEN_FOUND)
 endmacro(_SETUP_PROJECT_DOCUMENTATION_FINALIZE)
