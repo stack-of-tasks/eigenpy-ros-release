@@ -1,4 +1,4 @@
-From 9a4df277200eb5133a4ea37fcf3ebd02fe63faca Mon Sep 17 00:00:00 2001
+From 5fc05bc3ebe15640b4f911988e9f17543af15b16 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Wed, 2 Feb 2022 22:48:22 +0000
 Subject: [PATCH 3/5] Fix python3 path
@@ -8,7 +8,7 @@ Subject: [PATCH 3/5] Fix python3 path
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index 81ff612..0ae7cb5 100644
+index 6b79741..1334d5f 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -40,7 +40,7 @@ if(NOT DEFINED CMAKE_BUILD_TYPE)
