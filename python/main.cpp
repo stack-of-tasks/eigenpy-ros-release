@@ -1,6 +1,6 @@
 /*
  * Copyright 2014-2019, CNRS
- * Copyright 2018-2022, INRIA
+ * Copyright 2018-2023, INRIA
  */
 
 #include <boost/python/scope.hpp>
@@ -22,11 +22,15 @@ BOOST_PYTHON_MODULE(eigenpy_pywrap) {
   enableEigenPy();
 
   bp::scope().attr("__version__") = eigenpy::printVersion();
+  bp::scope().attr("__eigen_version__") = eigenpy::printEigenVersion();
   bp::scope().attr("__raw_version__") = bp::str(EIGENPY_VERSION);
   bp::def("checkVersionAtLeast", &eigenpy::checkVersionAtLeast,
           bp::args("major_version", "minor_version", "patch_version"),
           "Checks if the current version of EigenPy is at least the version "
           "provided by the input arguments.");
+
+  bp::def("SimdInstructionSetsInUse", &Eigen::SimdInstructionSetsInUse,
+          "Get the set of SIMD instructions in use with Eigen.");
 
   exposeAngleAxis();
   exposeQuaternion();
