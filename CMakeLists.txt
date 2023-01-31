@@ -1,5 +1,5 @@
 #
-# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2022 INRIA
+# Copyright (c) 2014-2019 CNRS Copyright (c) 2018-2023 INRIA
 #
 
 cmake_minimum_required(VERSION 3.1)
@@ -30,16 +30,6 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
     FetchContent_GetProperties("jrl-cmakemodules" SOURCE_DIR JRL_CMAKE_MODULES)
   endif()
 endif()
-
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-IF(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-ENDIF()
-IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  SET(CMAKE_INSTALL_LIBDIR "lib/")
-ENDIF()
 
 # Disable -Werror on Unix for now.
 set(CXX_DISABLE_WERROR True)
@@ -92,6 +82,10 @@ endif()
 set(PYTHON_EXPORT_DEPENDENCY ON)
 findpython(REQUIRED)
 
+if(${NUMPY_VERSION} VERSION_LESS "1.16.0")
+  set(NUMPY_WITH_BROKEN_UFUNC_SUPPORT TRUE)
+endif()
+
 if(WIN32)
   link_directories(${PYTHON_LIBRARY_DIRS})
   # # Set default Windows build paths SET(CMAKE_LIBRARY_OUTPUT_DIRECTORY
@@ -140,6 +134,7 @@ set(${PROJECT_NAME}_HEADERS
     ${${PROJECT_NAME}_UTILS_HEADERS}
     ${${PROJECT_NAME}_SOLVERS_HEADERS}
     ${${PROJECT_NAME}_DECOMPOSITIONS_HEADERS}
+    include/eigenpy/alignment.hpp
     include/eigenpy/computation-info.hpp
     include/eigenpy/eigenpy.hpp
     include/eigenpy/exception.hpp
