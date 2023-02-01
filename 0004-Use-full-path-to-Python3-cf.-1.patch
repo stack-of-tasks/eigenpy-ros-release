@@ -1,4 +1,4 @@
-From 946f073603cb3973d4e5a5d1d8da3735344e2c5a Mon Sep 17 00:00:00 2001
+From 0bb141134e7e487803d0eae4686e5a46dab3bb3d Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 26 Jan 2021 23:32:03 +0000
 Subject: [PATCH 4/6] Use full path to Python3, cf. #1
@@ -8,7 +8,7 @@ Subject: [PATCH 4/6] Use full path to Python3, cf. #1
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index caff5ee..b70d202 100644
+index 0ecf39a..f451952 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -32,7 +32,7 @@ if(NOT EXISTS "${CMAKE_SOURCE_DIR}/cmake/base.cmake")
