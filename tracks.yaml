@@ -123,7 +123,7 @@ tracks:
     last_version: 3.1.4
     name: upstream
     patches: null
-    release_inc: '2'
+    release_inc: '3'
     release_repo_url: git@github.com:stack-of-tasks/eigenpy-ros-release.git
     release_tag: v:{version}
     ros_distro: noetic
