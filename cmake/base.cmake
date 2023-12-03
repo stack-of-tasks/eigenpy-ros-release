@@ -103,6 +103,10 @@
 #
 # This variable provides the full path pointing to the JRL cmake module.
 #
+# .. variable:: PROJECT_JRL_CMAKE_BINARY_DIR
+#
+# This variable provides the full path pointing to the JRL cmake binary dir.
+#
 # .. variable:: PROJECT_COMPATIBILITY_VERSION
 #
 # If set, this variable defines COMPATIBILITY version of the project
@@ -115,8 +119,19 @@
 # ------
 #
 
+if(CMAKE_MINIMUM_REQUIRED_VERSION VERSION_LESS 3.10)
+  message(
+    FATAL_ERROR
+      "JRL-CMakemodules require CMake >= 3.10. Please update your main 'cmake_minimum_required'"
+  )
+endif()
+
 set(PROJECT_JRL_CMAKE_MODULE_DIR
     ${CMAKE_CURRENT_LIST_DIR}
+    CACHE INTERNAL "")
+
+set(PROJECT_JRL_CMAKE_BINARY_DIR
+    ${CMAKE_CURRENT_BINARY_DIR}
     CACHE INTERNAL "")
 
 # Please note that functions starting with an underscore are internal functions
@@ -142,6 +157,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/oscheck.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/cxx-standard.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/coverage.cmake)
 include(${CMAKE_CURRENT_LIST_DIR}/modernize-links.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/relpath.cmake)
 
 # --------- # Constants # --------- #
 
@@ -163,6 +179,8 @@ foreach(VARIABLE ${REQUIRED_VARIABLES})
       FATAL_ERROR "Required variable ``${VARIABLE}'' has not been defined.")
   endif(NOT DEFINED ${VARIABLE})
 endforeach(VARIABLE)
+
+message(STATUS "Configuring \"${PROJECT_NAME}\" (${PROJECT_URL})")
 
 # If the project version number is not set, compute it automatically.
 if(NOT DEFINED PROJECT_VERSION)
@@ -204,11 +222,14 @@ variable_watch(CMAKE_CURRENT_LIST_DIR SETUP_PROJECT_FINALIZE_HOOK)
 function(SETUP_PROJECT_FINALIZE_HOOK VARIABLE ACCESS)
   if("${${VARIABLE}}" STREQUAL "")
     set(CMAKE_CURRENT_LIST_DIR ${PROJECT_JRL_CMAKE_MODULE_DIR})
+    set(JRL_CMAKEMODULE_LOGGING_FILENAME
+        "${PROJECT_JRL_CMAKE_BINARY_DIR}/config.log")
     setup_project_finalize()
     if(PROJECT_USE_CMAKE_EXPORT)
       setup_project_package_finalize()
     endif()
     set(CMAKE_CURRENT_LIST_DIR "") # restore value
+    set(JRL_CMAKEMODULE_LOGGING_FILENAME "") # restore value
   endif()
 endfunction()
 
@@ -243,19 +264,9 @@ endmacro(
 # LIST            : the list. VALUE           : the value to be appended.
 #
 macro(_ADD_TO_LIST_IF_NOT_PRESENT LIST VALUE)
-  if(CMAKE_VERSION VERSION_GREATER "3.3.0")
-    cmake_policy(PUSH)
-    cmake_policy(SET CMP0057 NEW)
-    # To be more robust, value should be stripped
-    if(NOT "${VALUE}" IN_LIST ${LIST})
-      list(APPEND ${LIST} "${VALUE}")
-    endif()
-    cmake_policy(POP)
-  else()
-    list(FIND LIST "${VALUE}" _index)
-    if(${_index} EQUAL -1)
-      list(APPEND LIST "${VALUE}")
-    endif()
+  # To be more robust, value should be stripped
+  if(NOT "${VALUE}" IN_LIST ${LIST})
+    list(APPEND ${LIST} "${VALUE}")
   endif()
 endmacro(
   _ADD_TO_LIST_IF_NOT_PRESENT
@@ -341,20 +352,39 @@ macro(COMPUTE_PROJECT_ARGS _project_VARIABLE)
     set(_project_LANGUAGES "CXX")
   endif()
 
-  if(CMAKE_VERSION VERSION_GREATER "3.0.0")
-    # CMake >= 3.0
-    cmake_policy(SET CMP0048 NEW)
-    set(${_project_VARIABLE} VERSION ${PROJECT_VERSION_FULL} LANGUAGES
-                             ${_project_LANGUAGES})
-
-    # Append description for CMake >= 3.9
-    if(CMAKE_VERSION VERSION_GREATER "3.9.0")
-      set(${_project_VARIABLE} ${${_project_VARIABLE}} DESCRIPTION
-                               ${PROJECT_DESCRIPTION})
-    endif(CMAKE_VERSION VERSION_GREATER "3.9.0")
-  else(CMAKE_VERSION VERSION_GREATER "3.0.0")
-
-    # CMake < 3.0
-    set(${_project_VARIABLE} ${_project_LANGUAGES})
-  endif(CMAKE_VERSION VERSION_GREATER "3.0.0")
+  set(${_project_VARIABLE}
+      VERSION ${PROJECT_VERSION_FULL} LANGUAGES ${_project_LANGUAGES}
+      DESCRIPTION ${PROJECT_DESCRIPTION})
 endmacro(COMPUTE_PROJECT_ARGS)
+
+# .rst: .. ifmode:: user
+#
+# .. command:: SET_DEFAULT_CMAKE_BUILD_TYPE
+# (Release|Debug|RelWithDebInfo|MinSizeRel)
+#
+# Set the default value of CMAKE_BUILD_TYPE if it is not already defined by the
+# user.
+#
+macro(SET_DEFAULT_CMAKE_BUILD_TYPE build_type)
+  string(TOLOWER "${build_type}" build_type_lower)
+
+  if(NOT "${build_type_lower}" MATCHES
+     "(debug)|(release)|(relwithdebinfo)|(minsizerel)")
+    message(
+      FATAL_ERROR
+        "${build_type} value does not match with Debug, Release, RelWithDebInfo or MinSizeRel"
+    )
+  endif()
+
+  if(NOT CMAKE_BUILD_TYPE
+     AND NOT CMAKE_CONFIGURATION_TYPES
+     AND NOT DEFINED ENV{CMAKE_BUILD_TYPE})
+    set(CMAKE_BUILD_TYPE
+        ${build_type}
+        CACHE STRING "Choose the build type value." FORCE)
+    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS "Debug" "Release"
+                                                 "RelWithDebInfo" "MinSizeRel")
+    message(
+      STATUS "CMAKE_BUILD_TYPE has automatically been set to ${build_type}")
+  endif()
+endmacro(SET_DEFAULT_CMAKE_BUILD_TYPE)

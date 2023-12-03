@@ -4,10 +4,10 @@ on: [push,pull_request]
 
 jobs:
   eigenpy-conda:
-    name: ${{ matrix.os }} - ${{ matrix.build_type }} ${{ matrix.cxx_options }}
+    name: ${{ matrix.os }} - Python ${{ matrix.python-version }} ${{ matrix.build_type }} ${{ matrix.cxx_options }}
     runs-on: ${{ matrix.os }}
     env:
-      CCACHE_DIR: /github/home/.ccache # Enable ccache
+      CCACHE_DIR: ${{ matrix.CCACHE_DIR }}
 
     strategy:
       fail-fast: false
@@ -15,7 +15,13 @@ jobs:
         os: ["ubuntu-latest", "macos-latest"]
         cxx_options: ['', '-mavx2']
         build_type: [Release, Debug]
+        python-version: ["3.8", "3.12"]
 
+        include:
+          - os: ubuntu-latest
+            CCACHE_DIR: /home/runner/.ccache
+          - os: macos-latest
+            CCACHE_DIR: /Users/runner/.ccache
 
         exclude:
           - build_type: Debug
@@ -35,18 +41,21 @@ jobs:
         activate-environment: eigenpy
         auto-update-conda: true
         environment-file: .github/workflows/conda/environment.yml
-        python-version: '3.10'
+        python-version: ${{ matrix.python-version }}
 
     - uses: actions/cache@v3
       with:
         path: ${{ env.CCACHE_DIR }}
         key: ccache-${{ matrix.os }}-${{ matrix.build_type }}-${{ matrix.cxx_options }}
 
+    - name: Prepare cache dir
+      run: sudo mkdir -p ${CCACHE_DIR}/tmp && sudo chown -R $(id -un) ${CCACHE_DIR}
+
     - name: Install cmake and update conda
       shell: bash -l {0}
       run: |
         conda activate eigenpy
-        conda install cmake -c main
+        conda install cmake ccache -c conda-forge
         conda list
 
     - name: Build EigenPy
@@ -58,7 +67,7 @@ jobs:
         mkdir build
         cd build
 
-        cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DCMAKE_BUILD_TYPE=Release -DPYTHON_EXECUTABLE=$(which python3) -DGENERATE_PYTHON_STUBS=ON -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_FLAGS=${{ matrix.cxx_options }}
+        cmake .. -DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DPYTHON_EXECUTABLE=$(which python3) -DGENERATE_PYTHON_STUBS=ON -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DCMAKE_CXX_FLAGS=${{ matrix.cxx_options }}
         make
         make build_tests
         export CTEST_OUTPUT_ON_FAILURE=1
@@ -88,3 +97,19 @@ jobs:
       run: |
         cd build
         make uninstall
+
+
+  check:
+    if: always()
+    name: check-macos-linux-conda
+
+    needs:
+    - eigenpy-conda
+
+    runs-on: Ubuntu-latest
+
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}

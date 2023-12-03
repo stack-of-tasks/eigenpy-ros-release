@@ -1,6 +1,6 @@
 /*
  * Copyright 2014-2019, CNRS
- * Copyright 2018-2021, INRIA
+ * Copyright 2018-2023, INRIA
  */
 
 #include "eigenpy/eigenpy.hpp"
@@ -22,6 +22,8 @@ void exposeMatrixComplexFloat();
 void exposeMatrixComplexDouble();
 void exposeMatrixComplexLongDouble();
 
+void exposeNoneType();
+
 /* Enable Eigen-Numpy serialization for a set of standard MatrixBase instances.
  */
 void enableEigenPy() {
@@ -29,20 +31,6 @@ void enableEigenPy() {
   import_numpy();
 
   Exception::registerException();
-
-  bp::def(
-      "setNumpyType", &NumpyType::setNumpyType, bp::arg("numpy_type"),
-      "Change the Numpy type returned by the converters from an Eigen object.");
-
-  bp::def(
-      "getNumpyType", &NumpyType::getNumpyType,
-      "Get the Numpy type returned by the converters from an Eigen object.");
-
-  bp::def("switchToNumpyArray", &NumpyType::switchToNumpyArray,
-          "Set the conversion from Eigen::Matrix to numpy.ndarray.");
-
-  bp::def("switchToNumpyMatrix", &NumpyType::switchToNumpyMatrix,
-          "Set the conversion from Eigen::Matrix to numpy.matrix.");
 
   bp::def("sharedMemory", (void (*)(const bool))NumpyType::sharedMemory,
           bp::arg("value"),
@@ -68,6 +56,16 @@ void enableEigenPy() {
   exposeMatrixComplexFloat();
   exposeMatrixComplexDouble();
   exposeMatrixComplexLongDouble();
+
+  exposeNoneType();
+}
+
+bool withTensorSupport() {
+#ifdef EIGENPY_WITH_TENSOR_SUPPORT
+  return true;
+#else
+  return false;
+#endif
 }
 
 }  // namespace eigenpy

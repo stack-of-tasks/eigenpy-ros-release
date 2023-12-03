@@ -1,37 +1,42 @@
-EigenPy — Efficient Python bindings between Numpy/Eigen
+EigenPy — Versatile and efficient Python bindings between Numpy and Eigen
 ======
 
 <p align="center">
   <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-green.svg" alt="License"/></a>
-  <a href="https://travis-ci.org/stack-of-tasks/eigenpy"><img src="https://travis-ci.org/stack-of-tasks/eigenpy.svg?branch=master" alt="Build Status"/></a>
+  <a href="https://github.com/stack-of-tasks/eigenpy/workflows/linux.yml"><img alt="Build Status" src="https://github.com/stack-of-tasks/eigenpy/actions/workflows/linux.yml/badge.svg?branch=devel" /></a>
   <a href="https://anaconda.org/conda-forge/eigenpy"><img src="https://img.shields.io/conda/dn/conda-forge/eigenpy.svg" alt="Conda Downloads"/></a>
   <a href="https://anaconda.org/conda-forge/eigenpy"><img src="https://img.shields.io/conda/vn/conda-forge/eigenpy.svg" alt="Conda Version"/></a>
   <a href="https://badge.fury.io/py/eigenpy"><img src="https://badge.fury.io/py/eigenpy.svg" alt="PyPI version"></a>
   <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
 </p>
 
-**EigenPy** is an open source framework which allows to bind the famous [Eigen](http://eigen.tuxfamily.org) C++ library in Python.
+**EigenPy** is an open-source framework that allows the binding of the famous [Eigen](http://eigen.tuxfamily.org) C++ library in Python via Boost.Python.
 
 **EigenPy** provides:
- - full memory sharing between Numpy and Eigen avoiding memory allocation
+ - full memory sharing between Numpy and Eigen, avoiding memory allocation
  - full support Eigen::Ref avoiding memory allocation
+ - full support of the Eigen::Tensor module
  - exposition of the Geometry module of Eigen for easy code prototyping
- - standard matrix decomposion routines of Eigen such as the Cholesky decomposition, SVD decomposition, QR decomposition, and etc.
+ - standard matrix decomposion routines of Eigen such as the Cholesky decomposition, SVD decomposition, QR decomposition, etc.
  - full support of SWIG objects
+ - full support of runtime declaration of Numpy scalar types
+ - extended API to expose std::vector types
+ - full support of vectorization between C++ and Python (all the hold objects are properly aligned in memory)
 
 ## Setup
 
-The installation of **EigenPy** on your computer is made easy for Linux/BSD, Mac OS X and Windows environments.
+The installation of **EigenPy** on your computer is made easy for Linux/BSD, Mac OS X, and Windows environments.
 
 ### The Conda approach
 
 You simply need this simple line:
-```
+```bash
 conda install eigenpy -c conda-forge
 ```
+
 ### Ubuntu
 
-You can easily install **EigenPy** from binairies.
+You can easily install **EigenPy** from binaries.
 
 #### Add robotpkg apt repository
 1. Add robotpkg as source repository to apt:
@@ -42,27 +47,23 @@ sudo sh -c "echo 'deb [arch=amd64] http://robotpkg.openrobots.org/packages/debia
 ```
 curl http://robotpkg.openrobots.org/packages/debian/robotpkg.key | sudo apt-key add -
 ```
-3. You need to run at least once apt update to fetch the package descriptions:
-```
+3. You need to run at least one apt update to fetch the package descriptions:
+```bash
 sudo apt-get update
 ```
+
 #### Install EigenPy
 4. The installation of **EigenPy** and its dependencies is made through the line:
 
-For Python 2.7
-```
-sudo apt install robotpkg-py27-eigenpy
-```
-or for Python 3.{5,6,7}
-```
+```bash
 sudo apt install robotpkg-py35-eigenpy
 ```
-where 35 should be replaced by the python 3 you want to work this (e.g. `robotpkg-py36-eigenpy` to work with Python 3.6).
+where 35 should be replaced by the Python 3, you want to work this (e.g., `robotpkg-py36-eigenpy` to work with Python 3.6).
 
 ### Mac OS X
 
 The installation of **EigenPy** on Mac OS X is made via [HomeBrew](https://brew.sh/).
-You just need to register the tap of the sofware repository.
+You just need to register the tap of the software repository.
 
 ```
 brew tap gepetto/homebrew-gepetto
@@ -81,8 +82,10 @@ The following people have been involved in the development of **EigenPy**:
 - [Wolfgang Merkt](http://www.wolfgangmerkt.com/) (University of Edinburgh): ROS integration and support
 - [Sean Yen](https://www.linkedin.com/in/seanyentw) (Microsoft): Windows integration
 - [Loïc Estève](https://github.com/lesteve) (INRIA): Conda integration
+- [Wilson Jallet](https://manifoldfr.github.io/) (INRIA/LAAS-CNRS): core developer
+- [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and manager of the project
 
-If you have taken part to the development of **EigenPy**, feel free to add your name and contribution here.
+If you have taken part in the development of **EigenPy**, feel free to add your name and contribution here.
 
 ## Acknowledgments
 
