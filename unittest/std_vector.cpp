@@ -30,6 +30,10 @@ void setZero(std::vector<MatType, Eigen::aligned_allocator<MatType> > &Ms) {
   }
 }
 
+struct CustomTestStruct {
+  bool operator==(const CustomTestStruct &) const { return true; }
+};
+
 BOOST_PYTHON_MODULE(std_vector) {
   namespace bp = boost::python;
   using namespace eigenpy;
@@ -49,4 +53,19 @@ BOOST_PYTHON_MODULE(std_vector) {
   typedef Eigen::Ref<Eigen::MatrixXd> RefXd;
   StdVectorPythonVisitor<std::vector<RefXd>, true>::expose("StdVec_MatRef");
   bp::def("setZero", setZero<Eigen::MatrixXd>, "Sets the coeffs to 0.");
+
+  // Test matrix modification
+  // Mat2d don't have tolist, reserve, mutable __getitem__ and from list
+  // conversion
+  // exposeStdVectorEigenSpecificType must add those methods to StdVec_Mat2d
+  bp::class_<std::vector<Eigen::Matrix2d> >("StdVec_Mat2d")
+      .def(boost::python::vector_indexing_suite<
+           std::vector<Eigen::Matrix2d> >());
+  exposeStdVectorEigenSpecificType<Eigen::Matrix2d>("Mat2d");
+
+  // Test API regression:
+  // Exposing a `std::vector` with documentation doesn't clash with
+  // exposing a `std::vector` with a visitor
+  StdVectorPythonVisitor<std::vector<CustomTestStruct> >::expose(
+      "StdVec_CustomTestStruct", "some documentation");
 }
