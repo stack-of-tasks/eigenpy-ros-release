@@ -1,4 +1,4 @@
-From b52437eaef8e9fa83b67fbdc4d76eef3a38dc0ad Mon Sep 17 00:00:00 2001
+From 50352f6addfe653cde3090543c9e1e9f05a9e53b Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:17:07 +0100
 Subject: [PATCH 6/6] Only set CMake variables if not set, cf. #2
@@ -31,5 +31,5 @@ index f451952..1ad2264 100644
  # Disable -Werror on Unix for now.
  set(CXX_DISABLE_WERROR True)
 -- 
-2.25.1
+2.43.0
 

@@ -1,4 +1,4 @@
-From 19bb7d12243e50b4b4936034bd0fdc3020a0fd6f Mon Sep 17 00:00:00 2001
+From 72c0b787efac3876dbb494c358cdd4b9ab59ffff Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Fri, 29 May 2020 11:47:27 +0100
 Subject: [PATCH 3/6] Workaround for architecture issue with GNUInstallDirs
@@ -21,5 +21,5 @@ index 7cd02ab..0ecf39a 100644
  # Disable -Werror on Unix for now.
  set(CXX_DISABLE_WERROR True)
 -- 
-2.25.1
+2.43.0
 
