@@ -97,7 +97,7 @@ tracks:
     name: upstream
     patches: null
     release_inc: '1'
-    release_repo_url: git@github.com:ipab-slmc/eigenpy_catkin-release.git
+    release_repo_url: git@github.com:stack-of-tasks/eigenpy-ros-release.git
     release_tag: v:{version}
     ros_distro: melodic
     vcs_type: git
@@ -124,7 +124,7 @@ tracks:
     name: upstream
     patches: null
     release_inc: '2'
-    release_repo_url: git@github.com:ipab-slmc/eigenpy_catkin-release.git
+    release_repo_url: git@github.com:stack-of-tasks/eigenpy-ros-release.git
     release_tag: v:{version}
     ros_distro: noetic
     vcs_type: git
