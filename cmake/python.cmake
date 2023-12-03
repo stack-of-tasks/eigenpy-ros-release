@@ -55,14 +55,6 @@
 # nothing for CMake < 3.12 which doesn't have those. This also export: -
 # `FIND_NUMPY` and/or `SEARCH_FOR_BOOST_PYTHON` if necessary.
 
-if(CMAKE_VERSION VERSION_LESS "3.2")
-  set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/python ${CMAKE_MODULE_PATH})
-  message(
-    STATUS
-      "CMake versions older than 3.2 do not properly find Python. Custom macros are used to find it."
-  )
-endif(CMAKE_VERSION VERSION_LESS "3.2")
-
 macro(FINDPYTHON)
   if(DEFINED FINDPYTHON_ALREADY_CALLED)
     message(
@@ -120,7 +112,7 @@ macro(FINDPYTHON)
         endif()
       endif()
 
-      if(NOT DEFINED Python_EXCUTABLE)
+      if(NOT DEFINED Python_EXECUTABLE)
         set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
       endif()
     else()
@@ -142,25 +134,31 @@ macro(FINDPYTHON)
         ERROR_VARIABLE _PYTHON_VERSION_OUTPUT
         OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_STRIP_TRAILING_WHITESPACE)
 
+      if(NOT "${_PYTHON_VERSION_RESULT_VARIABLE}" STREQUAL "0")
+        message(FATAL_ERROR "${PYTHON_EXECUTABLE} --version did not succeed.")
+      endif()
+      string(REGEX REPLACE "Python " "" _PYTHON_VERSION
+                           ${_PYTHON_VERSION_OUTPUT})
+      string(REGEX REPLACE "\\." ";" _PYTHON_VERSION ${_PYTHON_VERSION})
+      list(GET _PYTHON_VERSION 0 _PYTHON_VERSION_MAJOR)
+
       # Provide some hints according to the current PYTHON_EXECUTABLE
       if(NOT DEFINED PYTHON_INCLUDE_DIR)
+        if(_PYTHON_VERSION_MAJOR EQUAL "2")
+          set(_PYTHON_INCLUDE_DIR_CMD
+              "import distutils.sysconfig as sysconfig; print(sysconfig.get_python_inc())"
+          )
+        else()
+          set(_PYTHON_INCLUDE_DIR_CMD
+              "import sysconfig; print(sysconfig.get_path('include'))")
+        endif()
         execute_process(
-          COMMAND
-            "${PYTHON_EXECUTABLE}" "-c"
-            "import distutils.sysconfig as sysconfig; print(sysconfig.get_python_inc())"
+          COMMAND "${PYTHON_EXECUTABLE}" "-c" "${_PYTHON_INCLUDE_DIR_CMD}"
           OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
           ERROR_QUIET)
         string(STRIP "${PYTHON_INCLUDE_DIR}" PYTHON_INCLUDE_DIR)
         file(TO_CMAKE_PATH "${PYTHON_INCLUDE_DIR}" PYTHON_INCLUDE_DIR)
       endif()
-
-      if(NOT "${_PYTHON_VERSION_RESULT_VARIABLE}" STREQUAL "0")
-        message(FATAL_ERROR "${PYTHON_EXECUTABLE} --version did not succeed.")
-      endif(NOT "${_PYTHON_VERSION_RESULT_VARIABLE}" STREQUAL "0")
-      string(REGEX REPLACE "Python " "" _PYTHON_VERSION
-                           ${_PYTHON_VERSION_OUTPUT})
-      string(REGEX REPLACE "\\." ";" _PYTHON_VERSION ${_PYTHON_VERSION})
-      list(GET _PYTHON_VERSION 0 _PYTHON_VERSION_MAJOR)
 
       # Hint for finding the right Python version
       set(Python_EXECUTABLE ${PYTHON_EXECUTABLE})
@@ -179,11 +177,11 @@ macro(FINDPYTHON)
           message(FATAL_ERROR "Python executable has not been found.")
         else()
           set(_PYTHON_VERSION_MAJOR 3)
-        endif(NOT Python3_FOUND)
+        endif()
       else()
         set(_PYTHON_VERSION_MAJOR 2)
-      endif(NOT Python2_FOUND)
-    endif(PYTHON_EXECUTABLE)
+      endif()
+    endif()
 
     set(_PYTHON_PREFIX "Python${_PYTHON_VERSION_MAJOR}")
 
@@ -211,12 +209,12 @@ macro(FINDPYTHON)
       file(TO_CMAKE_PATH "${NUMPY_INCLUDE_DIRS}" NUMPY_INCLUDE_DIRS)
     endif()
 
-  else(NOT CMAKE_VERSION VERSION_LESS "3.12")
+  else()
 
     find_package(PythonInterp ${ARGN})
     if(NOT ${PYTHONINTERP_FOUND} STREQUAL TRUE)
       message(FATAL_ERROR "Python executable has not been found.")
-    endif(NOT ${PYTHONINTERP_FOUND} STREQUAL TRUE)
+    endif()
     message(STATUS "PythonInterp: ${PYTHON_EXECUTABLE}")
 
     # Set PYTHON_INCLUDE_DIR variables if it is not defined by the user
@@ -224,17 +222,23 @@ macro(FINDPYTHON)
       # Retrieve the corresponding value of PYTHON_INCLUDE_DIR if it is not
       # defined
       if(NOT DEFINED PYTHON_INCLUDE_DIR)
+        if(PYTHON_VERSION_MAJOR EQUAL "2")
+          set(_PYTHON_INCLUDE_DIR_CMD
+              "import distutils.sysconfig as sysconfig; print(sysconfig.get_python_inc())"
+          )
+        else()
+          set(_PYTHON_INCLUDE_DIR_CMD
+              "import sysconfig; print(sysconfig.get_path('include'))")
+        endif()
         execute_process(
-          COMMAND
-            "${PYTHON_EXECUTABLE}" "-c"
-            "import distutils.sysconfig as sysconfig; print(sysconfig.get_python_inc())"
+          COMMAND "${PYTHON_EXECUTABLE}" "-c" "${_PYTHON_INCLUDE_DIR_CMD}"
           OUTPUT_VARIABLE PYTHON_INCLUDE_DIR
           ERROR_QUIET)
         string(STRIP "${PYTHON_INCLUDE_DIR}" PYTHON_INCLUDE_DIR)
-      endif(NOT DEFINED PYTHON_INCLUDE_DIR)
+      endif()
       set(PYTHON_INCLUDE_DIRS ${PYTHON_INCLUDE_DIR})
 
-    endif(DEFINED PYTHON_EXECUTABLE)
+    endif()
 
     # Inform PythonLibs of the required version of PythonInterp
     set(PYTHONLIBS_VERSION_STRING ${PYTHON_VERSION_STRING})
@@ -243,7 +247,7 @@ macro(FINDPYTHON)
     message(STATUS "PythonLibraries: ${PYTHON_LIBRARIES}")
     if(NOT ${PYTHONLIBS_FOUND} STREQUAL TRUE)
       message(FATAL_ERROR "Python has not been found.")
-    endif(NOT ${PYTHONLIBS_FOUND} STREQUAL TRUE)
+    endif()
 
     string(REPLACE "." ";" _PYTHONLIBS_VERSION ${PYTHONLIBS_VERSION_STRING})
     list(GET _PYTHONLIBS_VERSION 0 PYTHONLIBS_VERSION_MAJOR)
@@ -255,10 +259,9 @@ macro(FINDPYTHON)
         FATAL_ERROR
           "Python interpreter and libraries are in different version: ${PYTHON_VERSION_STRING} vs ${PYTHONLIBS_VERSION_STRING}"
       )
-    endif(NOT ${PYTHON_VERSION_MAJOR} EQUAL ${PYTHONLIBS_VERSION_MAJOR}
-          OR NOT ${PYTHON_VERSION_MINOR} EQUAL ${PYTHONLIBS_VERSION_MINOR})
+    endif()
 
-  endif(NOT CMAKE_VERSION VERSION_LESS "3.12")
+  endif()
 
   # Find PYTHON_LIBRARY_DIRS
   get_filename_component(PYTHON_LIBRARY_DIRS "${PYTHON_LIBRARIES}" PATH)
@@ -267,7 +270,7 @@ macro(FINDPYTHON)
 
   if(PYTHON_SITELIB)
     file(TO_CMAKE_PATH "${PYTHON_SITELIB}" PYTHON_SITELIB)
-  else(PYTHON_SITELIB)
+  else()
     # Use either site-packages (default) or dist-packages (Debian packages)
     # directory
     option(PYTHON_DEB_LAYOUT "Enable Debian-style Python package layout" OFF)
@@ -275,17 +278,23 @@ macro(FINDPYTHON)
     option(PYTHON_STANDARD_LAYOUT "Enable standard Python package layout" OFF)
 
     if(PYTHON_STANDARD_LAYOUT)
-      set(PYTHON_SITELIB_CMD
+      set(_PYTHON_SITELIB_CMD
           "import sys, os; print(os.sep.join(['lib', 'python' + '.'.join(sys.version.split('.')[:2]), 'site-packages']))"
       )
-    else(PYTHON_STANDARD_LAYOUT)
-      set(PYTHON_SITELIB_CMD
-          "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix='', plat_specific=False))"
-      )
-    endif(PYTHON_STANDARD_LAYOUT)
+    else()
+      if(PYTHON_VERSION_MAJOR EQUAL "2")
+        set(_PYTHON_SITELIB_CMD
+            "from distutils import sysconfig; print(sysconfig.get_python_lib(prefix='', plat_specific=False))"
+        )
+      else()
+        set(_PYTHON_SITELIB_CMD
+            "import sysconfig; from pathlib import Path; print(Path(sysconfig.get_path('purelib')).relative_to(sysconfig.get_path('data')))"
+        )
+      endif()
+    endif()
 
     execute_process(
-      COMMAND "${PYTHON_EXECUTABLE}" "-c" "${PYTHON_SITELIB_CMD}"
+      COMMAND "${PYTHON_EXECUTABLE}" "-c" "${_PYTHON_SITELIB_CMD}"
       OUTPUT_VARIABLE PYTHON_SITELIB
       OUTPUT_STRIP_TRAILING_WHITESPACE ERROR_QUIET)
 
@@ -293,7 +302,7 @@ macro(FINDPYTHON)
     if(PYTHON_DEB_LAYOUT)
       string(REPLACE "site-packages" "dist-packages" PYTHON_SITELIB
                      "${PYTHON_SITELIB}")
-    endif(PYTHON_DEB_LAYOUT)
+    endif()
 
     # If PYTHON_PACKAGES_DIR is defined, then force the Python packages
     # directory name
@@ -301,8 +310,8 @@ macro(FINDPYTHON)
       string(REGEX
              REPLACE "(site-packages|dist-packages)" "${PYTHON_PACKAGES_DIR}"
                      PYTHON_SITELIB "${PYTHON_SITELIB}")
-    endif(PYTHON_PACKAGES_DIR)
-  endif(PYTHON_SITELIB)
+    endif()
+  endif()
 
   message(STATUS "Python site lib: ${PYTHON_SITELIB}")
   message(STATUS "Python include dirs: ${PYTHON_INCLUDE_DIRS}")
@@ -314,10 +323,10 @@ macro(FINDPYTHON)
     execute_process(
       COMMAND
         "${PYTHON_EXECUTABLE}" "-c"
-        "from distutils.sysconfig import get_config_var; print('.' + get_config_var('SOABI'))"
+        "from sysconfig import get_config_var; print('.' + get_config_var('SOABI'))"
       OUTPUT_VARIABLE PYTHON_SOABI)
     string(STRIP ${PYTHON_SOABI} PYTHON_SOABI)
-  endif(PYTHON_VERSION_MAJOR EQUAL 3 AND NOT WIN32)
+  endif()
 
   # Get PYTHON_EXT_SUFFIX
   set(PYTHON_EXT_SUFFIX "")
@@ -325,10 +334,10 @@ macro(FINDPYTHON)
     execute_process(
       COMMAND
         "${PYTHON_EXECUTABLE}" "-c"
-        "from distutils.sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))"
+        "from sysconfig import get_config_var; print(get_config_var('EXT_SUFFIX'))"
       OUTPUT_VARIABLE PYTHON_EXT_SUFFIX)
     string(STRIP ${PYTHON_EXT_SUFFIX} PYTHON_EXT_SUFFIX)
-  endif(PYTHON_VERSION_MAJOR EQUAL 3)
+  endif()
   if("${PYTHON_EXT_SUFFIX}" STREQUAL "")
     if(WIN32)
       set(PYTHON_EXT_SUFFIX ".pyd")
@@ -339,6 +348,7 @@ macro(FINDPYTHON)
 
   if(PYTHON_EXPORT_DEPENDENCY)
     install_jrl_cmakemodules_file("python.cmake")
+    install_jrl_cmakemodules_file("python-helpers.cmake")
     string(
       CONCAT PYTHON_EXPORT_DEPENDENCY_MACROS
              "list(APPEND PYTHON_COMPONENTS ${PYTHON_COMPONENTS})\n"
@@ -442,7 +452,7 @@ macro(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
 
   if(UNIX AND NOT APPLE)
     target_link_libraries(${PYTHON_MODULE} PUBLIC "-Wl,--no-as-needed")
-  endif(UNIX AND NOT APPLE)
+  endif()
   target_link_libraries(${PYTHON_MODULE} PUBLIC ${LIBRARYNAME}
                                                 dynamic-graph::dynamic-graph)
   target_link_boost_python(${PYTHON_MODULE} PUBLIC)
@@ -482,139 +492,6 @@ macro(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME LIBRARYNAME TARGETNAME)
 
 endmacro(DYNAMIC_GRAPH_PYTHON_MODULE SUBMODULENAME)
 
-# .rst: .. command::  PYTHON_INSTALL(MODULE FILE DEST)
-#
-# Compile and install a Python file.
-#
-macro(PYTHON_INSTALL MODULE FILE DEST)
-
-  python_build("${MODULE}" "${FILE}")
-
-  install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${MODULE}/${FILE}"
-          DESTINATION "${DEST}/${MODULE}")
-endmacro()
-
-# .rst: .. command:: PYTHON_INSTALL_ON_SITE (MODULE FILE)
-#
-# Compile and install a Python file in :cmake:variable:`PYTHON_SITELIB`.
-#
-macro(PYTHON_INSTALL_ON_SITE MODULE FILE)
-
-  if(NOT PYTHON_EXECUTABLE)
-    findpython()
-  endif()
-
-  python_install("${MODULE}" "${FILE}" ${PYTHON_SITELIB})
-
-endmacro()
-
-# PYTHON_BUILD(MODULE FILE DEST)
-# --------------------------------------
-#
-# Build a Python file from the source directory in the build directory.
-#
-macro(PYTHON_BUILD MODULE FILE)
-  # Regex from IsValidTargetName in CMake/Source/cmGeneratorExpression.cxx
-  string(REGEX REPLACE "[^A-Za-z0-9_.+-]" "_" compile_pyc
-                       "compile_pyc_${CMAKE_CURRENT_SOURCE_DIR}")
-  if(NOT TARGET ${compile_pyc})
-    add_custom_target(${compile_pyc} ALL)
-  endif()
-  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}")
-
-  add_custom_command(
-    TARGET ${compile_pyc}
-    PRE_BUILD
-    COMMAND
-      "${PYTHON_EXECUTABLE}" "${PROJECT_JRL_CMAKE_MODULE_DIR}/compile.py"
-      "${CMAKE_CURRENT_SOURCE_DIR}" "${CMAKE_CURRENT_BINARY_DIR}"
-      "${MODULE}/${FILE}")
-
-  # Tag pyc file as generated.
-  set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c"
-                              PROPERTIES GENERATED TRUE)
-
-  # Clean generated files.
-  set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-             "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c")
-endmacro()
-
-# PYTHON_BUILD_FILE(FILE)
-# --------------------------------------
-#
-# Build a Python a given file.
-#
-macro(PYTHON_BUILD_FILE FILE)
-  # Regex from IsValidTargetName in CMake/Source/cmGeneratorExpression.cxx
-  string(REGEX REPLACE "[^A-Za-z0-9_.+-]" "_" compile_pyc
-                       "compile_pyc_${CMAKE_CURRENT_SOURCE_DIR}")
-  if(NOT TARGET ${compile_pyc})
-    add_custom_target(${compile_pyc} ALL)
-  endif()
-
-  add_custom_command(
-    TARGET ${compile_pyc}
-    PRE_BUILD
-    COMMAND "${PYTHON_EXECUTABLE}" -c
-            "import py_compile; py_compile.compile(\"${FILE}\",\"${FILE}c\")"
-    VERBATIM)
-
-  # Tag pyc file as generated.
-  set_source_files_properties("${FILE}c" PROPERTIES GENERATED TRUE)
-
-  # Clean generated files.
-  set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES "${FILE}c")
-endmacro()
-
-# PYTHON_INSTALL_BUILD(MODULE FILE DEST)
-# --------------------------------------
-#
-# Install a Python file residing in the build directory and its associated
-# compiled version.
-#
-macro(PYTHON_INSTALL_BUILD MODULE FILE DEST)
-
-  message(
-    AUTHOR_WARNING
-      "PYTHON_INSTALL_BUILD is deprecated and will be removed in the future")
-  message(AUTHOR_WARNING "Please use PYTHON_INSTALL_ON_SITE")
-  message(
-    AUTHOR_WARNING
-      "ref https://github.com/jrl-umi3218/jrl-cmakemodules/issues/136")
-
-  file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}")
-
-  install(
-    CODE "EXECUTE_PROCESS(COMMAND
-    \"${PYTHON_EXECUTABLE}\"
-    \"${PROJECT_JRL_CMAKE_MODULE_DIR}/compile.py\"
-    \"${CMAKE_CURRENT_BINARY_DIR}\"
-    \"${CMAKE_CURRENT_BINARY_DIR}\"
-    \"${MODULE}/${FILE}\")
-    ")
-
-  # Tag pyc file as generated.
-  set_source_files_properties("${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c"
-                              PROPERTIES GENERATED TRUE)
-
-  # Clean generated files.
-  set_property(
-    DIRECTORY
-    APPEND
-    PROPERTY ADDITIONAL_MAKE_CLEAN_FILES
-             "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c")
-
-  install(FILES "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}"
-                "${CMAKE_CURRENT_BINARY_DIR}/${MODULE}/${FILE}c"
-          DESTINATION "${DEST}/${MODULE}")
-endmacro()
-
 # .rst: .. command:: FIND_NUMPY()
 #
 # Detect numpy module and define the variable NUMPY_INCLUDE_DIRS if it is not
@@ -651,3 +528,5 @@ macro(FIND_NUMPY)
     message(STATUS "  NUMPY_VERSION=${NUMPY_VERSION}")
   endif()
 endmacro()
+
+include(${CMAKE_CURRENT_LIST_DIR}/python-helpers.cmake)

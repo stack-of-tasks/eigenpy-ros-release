@@ -5,12 +5,12 @@ repos:
     -  id: check-useless-excludes
     -  id: check-hooks-apply
 -   repo: https://github.com/pre-commit/mirrors-clang-format
-    rev: v15.0.7
+    rev: v17.0.5
     hooks:
     -   id: clang-format
         args: [--style=Google]
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+    rev: v4.5.0
     hooks:
     -   id: check-added-large-files
     -   id: check-ast
@@ -25,13 +25,21 @@ repos:
     -   id: mixed-line-ending
     -   id: trailing-whitespace
 -   repo: https://github.com/psf/black
-    rev: 22.12.0
+    rev: 23.11.0
     hooks:
     -   id: black
+        exclude: |
+          (?x)^(
+              .cmake-format.py
+          )$
 -   repo: https://github.com/PyCQA/flake8
-    rev: 6.0.0
+    rev: 6.1.0
     hooks:
     -   id: flake8
+        exclude: |
+          (?x)^(
+              .cmake-format.py
+          )$
 -   repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: v0.6.13
     hooks:

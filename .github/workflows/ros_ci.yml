@@ -11,13 +11,12 @@ jobs:
     strategy:
       matrix:
         env:
-          - {ROS_DISTRO: melodic, PRERELEASE: false}
           - {ROS_DISTRO: noetic}
-          - {ROS_DISTRO: foxy}
-          - {ROS_DISTRO: rolling}
+          - {ROS_DISTRO: iron}
           - {ROS_DISTRO: humble}
+          - {ROS_DISTRO: rolling}
     env:
-      CCACHE_DIR: /github/home/.ccache # Enable ccache
+      # CCACHE_DIR: /home/runner/.ccache # Enable ccache
       PRERELEASE: true
       BUILDER: colcon
     runs-on: ubuntu-latest
@@ -26,19 +25,25 @@ jobs:
         with:
           submodules: recursive
       # This step will fetch/store the directory used by ccache before/after the ci run
-      - uses: actions/cache@v3
-        with:
-          path: ${{ env.CCACHE_DIR }}
-          key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
-      - name: Echo CCACHE_DIR
-        shell: bash -l {0}
-        env: ${{ matrix.env }}
-        run: |
-          echo CCACHE_DIR=${CCACHE_DIR}
-      - name: Echo CCACHE_DIR
-        shell: bash -l {0}
-        run: |
-          echo CCACHE_DIR=${CCACHE_DIR}
+      # - uses: actions/cache@v3
+      #   with:
+      #     path: ${{ env.CCACHE_DIR }}
+      #     key: ccache-${{ matrix.env.ROS_DISTRO }}-${{ matrix.env.ROS_REPO }}
       # Run industrial_ci
-      - uses: 'ros-industrial/industrial_ci@6a8f546cbd31fbd5c9f77e3409265c8b39abc3d6'
+      - uses: 'ros-industrial/industrial_ci@9f963f67ebb889792175776c5ee00134d7bb569b'
         env: ${{ matrix.env }}
+
+  check:
+    if: always()
+    name: check-ros-ci
+
+    needs:
+    - CI
+
+    runs-on: Ubuntu-latest
+
+    steps:
+    - name: Decide whether the needed jobs succeeded or failed
+      uses: re-actors/alls-green@release/v1
+      with:
+        jobs: ${{ toJSON(needs) }}

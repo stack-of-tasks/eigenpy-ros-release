@@ -49,7 +49,7 @@ if(NOT TARGET build_tests)
 endif()
 
 # Add new target 'run_tests' to improve integration with build tooling
-if(NOT CMAKE_GENERATOR MATCHES "Visual Studio" AND NOT TARGET run_tests)
+if(NOT CMAKE_GENERATOR MATCHES "Visual Studio|Xcode" AND NOT TARGET run_tests)
   add_custom_target(
     run_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure -V
@@ -117,6 +117,53 @@ endmacro(
   NAME
   SOURCE)
 
+# .rst: .. command:: COMPUTE_PYTHONPATH (result [MODULES...])
+#
+# Fill `result` with all necessary environment variables (`PYTHONPATH`,
+# `LD_LIBRARY_PATH`, `DYLD_LIBRARY_PATH`) to load the `MODULES` in
+# `CMAKE_BINARY_DIR` (`CMAKE_BINARY_DIR/MODULE_PATH`)
+#
+# .. note:: :command:`FINDPYTHON` should have been called first.
+#
+function(COMPUTE_PYTHONPATH result)
+  set(MODULES "${ARGN}") # ARGN is not a variable
+  foreach(MODULE_PATH IN LISTS MODULES)
+    if(CMAKE_GENERATOR MATCHES "Visual Studio|Xcode")
+      list(APPEND PYTHONPATH "${CMAKE_BINARY_DIR}/${MODULE_PATH}/$<CONFIG>")
+    else()
+      list(APPEND PYTHONPATH "${CMAKE_BINARY_DIR}/${MODULE_PATH}")
+    endif()
+  endforeach(MODULE_PATH IN LISTS MODULES)
+
+  if(DEFINED ENV{PYTHONPATH})
+    list(APPEND PYTHONPATH "$ENV{PYTHONPATH}")
+  endif(DEFINED ENV{PYTHONPATH})
+
+  # get path separator to join those paths
+  execute_process(
+    COMMAND "${PYTHON_EXECUTABLE}" "-c" "import os; print(os.pathsep)"
+    OUTPUT_VARIABLE PATHSEP
+    OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+  list(REMOVE_DUPLICATES PYTHONPATH)
+  if(WIN32)
+    # ensure that severals paths stay together as ENV variable PYTHONPATH when
+    # passed to python test via PROPERTIES
+    string(REPLACE ";" "\\\;" PYTHONPATH_STR "${PYTHONPATH}")
+  else(WIN32)
+    string(REPLACE ";" "${PATHSEP}" PYTHONPATH_STR "${PYTHONPATH}")
+  endif(WIN32)
+  set(ENV_VARIABLES "PYTHONPATH=${PYTHONPATH_STR}")
+  if(APPLE)
+    list(APPEND ENV_VARIABLES "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
+    list(APPEND ENV_VARIABLES "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}")
+  endif(APPLE)
+
+  set(${result}
+      ${ENV_VARIABLES}
+      PARENT_SCOPE)
+endfunction()
+
 # .rst: .. command:: ADD_PYTHON_UNIT_TEST (NAME SOURCE [MODULES...])
 #
 # Add a test called `NAME` that runs an equivalent of ``python ${SOURCE}``,
@@ -141,41 +188,38 @@ macro(ADD_PYTHON_UNIT_TEST NAME SOURCE)
   endif()
 
   set(MODULES "${ARGN}") # ARGN is not a variable
-  foreach(MODULE_PATH IN LISTS MODULES)
-    list(APPEND PYTHONPATH "${CMAKE_BINARY_DIR}/${MODULE_PATH}")
-    if(CMAKE_GENERATOR MATCHES "Visual Studio")
-      list(APPEND PYTHONPATH "${CMAKE_BINARY_DIR}/${MODULE_PATH}/$<CONFIG>")
-    endif(CMAKE_GENERATOR MATCHES "Visual Studio")
-  endforeach(MODULE_PATH IN LISTS MODULES)
-
-  if(DEFINED ENV{PYTHONPATH})
-    list(APPEND PYTHONPATH "$ENV{PYTHONPATH}")
-  endif(DEFINED ENV{PYTHONPATH})
-
-  # get path separator to join those paths
-  execute_process(
-    COMMAND "${PYTHON_EXECUTABLE}" "-c" "import os; print(os.pathsep)"
-    OUTPUT_VARIABLE PATHSEP
-    OUTPUT_STRIP_TRAILING_WHITESPACE)
-
-  list(REMOVE_DUPLICATES PYTHONPATH)
-  if(WIN32)
-    # ensure that severals paths stay together as ENV variable PYTHONPATH when
-    # passed to python test via PROPERTIES
-    string(REPLACE ";" "\;" PYTHONPATH_STR "${PYTHONPATH}")
-  else(WIN32)
-    string(REPLACE ";" "${PATHSEP}" PYTHONPATH_STR "${PYTHONPATH}")
-  endif(WIN32)
-  set(ENV_VARIABLES "PYTHONPATH=${PYTHONPATH_STR}")
-  if(APPLE)
-    list(APPEND ENV_VARIABLES "LD_LIBRARY_PATH=$ENV{LD_LIBRARY_PATH}")
-    list(APPEND ENV_VARIABLES "DYLD_LIBRARY_PATH=$ENV{DYLD_LIBRARY_PATH}")
-  endif(APPLE)
+  compute_pythonpath(ENV_VARIABLES ${MODULES})
   set_tests_properties(${NAME} PROPERTIES ENVIRONMENT "${ENV_VARIABLES}")
 endmacro(
   ADD_PYTHON_UNIT_TEST
   NAME
   SOURCE)
+
+# .rst: .. command:: ADD_PYTHON_MEMORYCHECK_UNIT_TEST (NAME SOURCE [MODULES...])
+#
+# Add a test called `NAME` that runs an equivalent of ``valgrind -- python
+# ${SOURCE}``, optionnaly with a `PYTHONPATH` set to
+# `CMAKE_BINARY_DIR/MODULE_PATH` for each MODULES `SOURCE` is relative to
+# `PROJECT_SOURCE_DIR`
+#
+# .. note:: :command:`FINDPYTHON` should have been called first. .. note:: Only
+# work if valgrind is installed
+#
+macro(ADD_PYTHON_MEMORYCHECK_UNIT_TEST NAME SOURCE)
+  if(MEMORYCHECK_COMMAND AND MEMORYCHECK_COMMAND MATCHES ".*valgrind$")
+    set(TEST_FILE_NAME memorycheck_unit_test_${NAME}.cmake)
+    set(PYTHON_TEST_SCRIPT "${PROJECT_SOURCE_DIR}/${SOURCE}")
+    configure_file(
+      ${PROJECT_JRL_CMAKE_MODULE_DIR}/memorycheck_unit_test.cmake.in
+      ${TEST_FILE_NAME} @ONLY)
+
+    add_test(NAME ${NAME} COMMAND ${CMAKE_COMMAND} -P ${TEST_FILE_NAME})
+
+    set(MODULES "${ARGN}") # ARGN is not a variable
+    compute_pythonpath(ENV_VARIABLES ${MODULES})
+    set_tests_properties(${NAME} PROPERTIES ENVIRONMENT "${ENV_VARIABLES}")
+  endif()
+endmacro()
 
 # .rst: .. command:: ADD_JULIA_UNIT_TEST (NAME SOURCE [MODULES...])
 #
