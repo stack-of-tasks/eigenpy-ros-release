@@ -1,4 +1,4 @@
-From de9305e39d309295787e314a00397db0f3ee7ac1 Mon Sep 17 00:00:00 2001
+From 8b736c18b5e035bd9732d79187906e79c019f37a Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 26 Jan 2021 23:32:03 +0000
 Subject: [PATCH 4/6] Use full path to Python3, cf. #1
