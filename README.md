@@ -8,6 +8,7 @@ EigenPy — Versatile and efficient Python bindings between Numpy and Eigen
   <a href="https://anaconda.org/conda-forge/eigenpy"><img src="https://img.shields.io/conda/vn/conda-forge/eigenpy.svg" alt="Conda Version"/></a>
   <a href="https://badge.fury.io/py/eigenpy"><img src="https://badge.fury.io/py/eigenpy.svg" alt="PyPI version"></a>
   <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
+  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Linter: ruff"></a>
 </p>
 
 **EigenPy** is an open-source framework that allows the binding of the famous [Eigen](http://eigen.tuxfamily.org) C++ library in Python via Boost.Python.
@@ -17,7 +18,7 @@ EigenPy — Versatile and efficient Python bindings between Numpy and Eigen
  - full support Eigen::Ref avoiding memory allocation
  - full support of the Eigen::Tensor module
  - exposition of the Geometry module of Eigen for easy code prototyping
- - standard matrix decomposion routines of Eigen such as the Cholesky decomposition, SVD decomposition, QR decomposition, etc.
+ - standard matrix decomposion routines of Eigen such as the Cholesky decomposition (SVD and QR decompositions [can be added](#contributing))
  - full support of SWIG objects
  - full support of runtime declaration of Numpy scalar types
  - extended API to expose std::vector types
@@ -73,16 +74,20 @@ and then install **EigenPy** for Python 3.x with:
 brew install eigenpy
 ```
 
+## Contributing
+
+Standard matrix decomposion routines of Eigen such as the SVD and QR decompositions can be readily added to **EigenPy** following the example of the Cholesky decomposition that is already implemented. Feel free to open a PR if you wrap them for your use case.
+
 ## Credits
 
 The following people have been involved in the development of **EigenPy**:
 
-- [Justin Carpentier](https://jcarpent.github.io) (INRIA): main developer and manager of the project
+- [Justin Carpentier](https://jcarpent.github.io) (Inria): main developer and manager of the project
 - [Nicolas Mansard](http://projects.laas.fr/gepetto/index.php/Members/NicolasMansard) (LAAS-CNRS): initial project instructor
 - [Wolfgang Merkt](http://www.wolfgangmerkt.com/) (University of Edinburgh): ROS integration and support
 - [Sean Yen](https://www.linkedin.com/in/seanyentw) (Microsoft): Windows integration
-- [Loïc Estève](https://github.com/lesteve) (INRIA): Conda integration
-- [Wilson Jallet](https://manifoldfr.github.io/) (INRIA/LAAS-CNRS): core developer
+- [Loïc Estève](https://github.com/lesteve) (Inria): Conda integration
+- [Wilson Jallet](https://manifoldfr.github.io/) (Inria/LAAS-CNRS): core developer
 - [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and manager of the project
 
 If you have taken part in the development of **EigenPy**, feel free to add your name and contribution here.
