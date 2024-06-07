@@ -1,4 +1,4 @@
-From 8b736c18b5e035bd9732d79187906e79c019f37a Mon Sep 17 00:00:00 2001
+From 9dedeb5a95225af643c58fe9296c182807e2310b Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 26 Jan 2021 23:32:03 +0000
 Subject: [PATCH 4/6] Use full path to Python3, cf. #1
@@ -21,5 +21,5 @@ index bf6dcdc..95bb737 100644
  
  # Disable -Werror on Unix for now.
 -- 
-2.43.0
+2.25.1
 
