@@ -6,6 +6,69 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ## [Unreleased]
 
+## [3.6.0] - 2024-06-05
+
+### Added
+- Added a deprecation call policy shortcut ([#466](https://github.com/stack-of-tasks/eigenpy/pull/466))
+
+### Fixed
+- Fix register_symbolic_link_to_registered_type() for multiple successive registrations ([#471](https://github.com/stack-of-tasks/eigenpy/pull/471))
+
+## [3.5.1] - 2024-04-25
+
+### Fixed
+- Allow EigenToPy/EigenFromPy specialization with CL compiler ([#462](https://github.com/stack-of-tasks/eigenpy/pull/462))
+- Fix missing include for boost >= 1.85  ([#464](https://github.com/stack-of-tasks/eigenpy/pull/464))
+
+## [3.5.0] - 2024-04-14
+
+### Added
+- Allow use of installed JRL-cmakemodule ([#446](https://github.com/stack-of-tasks/eigenpy/pull/446)
+- Support of Numpy 2.0.0b1 ([#448](https://github.com/stack-of-tasks/eigenpy/pull/448))
+- Support new primitive type (char, int8_t, uint8_t, int16_t, uint16_t, uint32_t, uint64_t) ([#455]()https://github.com/stack-of-tasks/eigenpy/pull/455)
+- Support conversion between signed <-> unsigned integers ([#455](https://github.com/stack-of-tasks/eigenpy/pull/455))
+- Support conversion between complex numbers ([#455](https://github.com/stack-of-tasks/eigenpy/pull/455))
+
+### Fixed
+- Fix unit test build in C++11 ([#442](https://github.com/stack-of-tasks/eigenpy/pull/442))
+- Fix unit test function signature [#443](https://github.com/stack-of-tasks/eigenpy/pull/443))
+- Fix CMake export ([#446](https://github.com/stack-of-tasks/eigenpy/pull/446)
+- Fix `int` management on Windows ([#455](https://github.com/stack-of-tasks/eigenpy/pull/455))
+- Fix `long long` management on Mac ([#455](https://github.com/stack-of-tasks/eigenpy/pull/455))
+- Allow to run test in the build directory on Windows ([#457](https://github.com/stack-of-tasks/eigenpy/pull/457))
+
+### Removed
+- Remove casting when converting from Eigen scalar to Numpy scalar.
+  This should not remove any functionality since Numpy array are created from the Eigen scalar type
+  ([#455](https://github.com/stack-of-tasks/eigenpy/pull/455))
+
+## [3.4.0] - 2024-02-26
+
+### Added
+- Support for `Eigen::SparseMatrix` types ([#426](https://github.com/stack-of-tasks/eigenpy/pull/426))
+- Support for `boost::variant` types with `VariantConverter` ([#430](https://github.com/stack-of-tasks/eigenpy/pull/430))
+- Support for `std::variant` types with `VariantConverter` ([#431](https://github.com/stack-of-tasks/eigenpy/pull/431))
+- Support for `std::unique_ptr` as a return types with `StdUniquePtrCallPolicies` and `boost::python::default_call_policies` ([#433](https://github.com/stack-of-tasks/eigenpy/pull/433))
+- Support for `std::unique_ptr` as an internal reference with `ReturnInternalStdUniquePtr` ([#433](https://github.com/stack-of-tasks/eigenpy/pull/433))
+- Support for `Eigen::Simplicial{LLT,LDLT}` and `Eigen::Cholmod{Simplicial,Supernodal}{LLT,LDLT}` Cholesky de compositions ([#438](https://github.com/stack-of-tasks/eigenpy/pull/438))
+- Switch to ruff for lints, format, and import sort ([#441](https://github.com/stack-of-tasks/eigenpy/pull/441))
+
+### Fixed
+- Fix the issue of missing exposition of Eigen types with __int64 scalar type ([#426](https://github.com/stack-of-tasks/eigenpy/pull/426))
+- Fix namespace use in unittest/std_pair.cpp ([#429](https://github.com/stack-of-tasks/eigenpy/pull/429))
+- Fix case of zero-size sparse matrices ([#437](https://github.com/stack-of-tasks/eigenpy/pull/437))
+
+## [3.3.0] - 2024-01-23
+
+### Fixed
+- Fix potential memory leak when returning a list from an `std::vector` or an `std::array` ([423](https://github.com/stack-of-tasks/eigenpy/pull/423))
+
+## [3.2.0] - 2023-12-12
+
+### Added
+- Support for C++11 `std::array` types ([#412](https://github.com/stack-of-tasks/pull/412))
+- Support for `std::pair` types ([#417](https://github.com/stack-of-tasks/pull/417))
+
 ## [3.1.4] - 2023-11-27
 
 ### Added
@@ -575,7 +638,13 @@ One can now easily expose C++ struct containing Eigen objects in Python avoiding
 
 ## [1.0.0] - 2014-07-18
 
-[Unreleased]: https://github.com/stack-of-tasks/eigenpy/compare/v3.1.4...HEAD
+[Unreleased]: https://github.com/stack-of-tasks/eigenpy/compare/v3.6.0...HEAD
+[3.6.0]: https://github.com/stack-of-tasks/eigenpy/compare/v3.5.1...v3.6.0
+[3.5.1]: https://github.com/stack-of-tasks/eigenpy/compare/v3.5.0...v3.5.1
+[3.5.0]: https://github.com/stack-of-tasks/eigenpy/compare/v3.4.0...v3.5.0
+[3.4.0]: https://github.com/stack-of-tasks/eigenpy/compare/v3.3.0...v3.4.0
+[3.3.0]: https://github.com/stack-of-tasks/eigenpy/compare/v3.2.0...v3.3.0
+[3.2.0]: https://github.com/stack-of-tasks/eigenpy/compare/v3.1.4...v3.2.0
 [3.1.4]: https://github.com/stack-of-tasks/eigenpy/compare/v3.1.3...v3.1.4
 [3.1.3]: https://github.com/stack-of-tasks/eigenpy/compare/v3.1.2...v3.1.3
 [3.1.2]: https://github.com/stack-of-tasks/eigenpy/compare/v3.1.1...v3.1.2
