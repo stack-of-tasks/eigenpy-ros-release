@@ -43,16 +43,6 @@ else()
   endif()
 endif()
 
-IF(NOT DEFINED CMAKE_BUILD_TYPE)
-  SET(CMAKE_BUILD_TYPE "Release")
-ENDIF()
-IF(NOT DEFINED PYTHON_EXECUTABLE)
-  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
-ENDIF()
-IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
-  SET(CMAKE_INSTALL_LIBDIR "lib/")
-ENDIF()
-
 function(set_standard_output_directory target)
   set_target_properties(
     ${target}
@@ -220,6 +210,11 @@ set(${PROJECT_NAME}_DECOMPOSITIONS_HEADERS
     include/eigenpy/decompositions/PermutationMatrix.hpp
     include/eigenpy/decompositions/LDLT.hpp
     include/eigenpy/decompositions/LLT.hpp
+    include/eigenpy/decompositions/QR.hpp
+    include/eigenpy/decompositions/HouseholderQR.hpp
+    include/eigenpy/decompositions/ColPivHouseholderQR.hpp
+    include/eigenpy/decompositions/CompleteOrthogonalDecomposition.hpp
+    include/eigenpy/decompositions/FullPivHouseholderQR.hpp
     include/eigenpy/decompositions/SelfAdjointEigenSolver.hpp
     include/eigenpy/decompositions/minres.hpp)
 
@@ -242,6 +237,7 @@ set(${PROJECT_NAME}_HEADERS
     include/eigenpy/eigen-to-python.hpp
     include/eigenpy/eigen-from-python.hpp
     include/eigenpy/eigen-typedef.hpp
+    include/eigenpy/id.hpp
     include/eigenpy/numpy-map.hpp
     include/eigenpy/geometry.hpp
     include/eigenpy/geometry-conversion.hpp
@@ -291,6 +287,7 @@ set(${PROJECT_NAME}_DECOMPOSITIONS_SOURCES
     src/decompositions/llt-solver.cpp
     src/decompositions/ldlt-solver.cpp
     src/decompositions/minres-solver.cpp
+    src/decompositions/qr-solvers.cpp
     src/decompositions/eigen-solver.cpp
     src/decompositions/self-adjoint-eigen-solver.cpp
     src/decompositions/permutation-matrix.cpp

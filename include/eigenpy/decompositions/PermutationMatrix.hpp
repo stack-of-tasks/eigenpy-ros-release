@@ -2,8 +2,8 @@
  * Copyright 2024 INRIA
  */
 
-#ifndef __eigenpy_decomposition_permutation_matrix_hpp__
-#define __eigenpy_decomposition_permutation_matrix_hpp__
+#ifndef __eigenpy_decompositions_permutation_matrix_hpp__
+#define __eigenpy_decompositions_permutation_matrix_hpp__
 
 #include "eigenpy/eigenpy.hpp"
 #include "eigenpy/eigen/EigenBase.hpp"
@@ -97,10 +97,11 @@ struct PermutationMatrixVisitor
                                   "This class represents a permutation matrix, "
                                   "internally stored as a vector of integers.",
                                   bp::no_init)
+        .def(IdVisitor<PermutationMatrix>())
         .def(PermutationMatrixVisitor());
   }
 };
 
 }  // namespace eigenpy
 
-#endif  // ifndef __eigenpy_decomposition_permutation_matrix_hpp__
+#endif  // ifndef __eigenpy_decompositions_permutation_matrix_hpp__
