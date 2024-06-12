@@ -1,9 +1,9 @@
 /*
- * Copyright 2020-2021 INRIA
+ * Copyright 2020-2024 INRIA
  */
 
-#ifndef __eigenpy_decomposition_llt_hpp__
-#define __eigenpy_decomposition_llt_hpp__
+#ifndef __eigenpy_decompositions_llt_hpp__
+#define __eigenpy_decompositions_llt_hpp__
 
 #include <Eigen/Cholesky>
 #include <Eigen/Core>
@@ -115,6 +115,7 @@ struct LLTSolverVisitor
         "remains useful in many other situations like generalised eigen "
         "problems with hermitian matrices.",
         bp::no_init)
+        .def(IdVisitor<Solver>())
         .def(LLTSolverVisitor());
   }
 
@@ -130,4 +131,4 @@ struct LLTSolverVisitor
 
 }  // namespace eigenpy
 
-#endif  // ifndef __eigenpy_decomposition_llt_hpp__
+#endif  // ifndef __eigenpy_decompositions_llt_hpp__

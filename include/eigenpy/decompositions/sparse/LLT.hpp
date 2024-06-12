@@ -2,8 +2,8 @@
  * Copyright 2024 INRIA
  */
 
-#ifndef __eigenpy_decomposition_sparse_llt_hpp__
-#define __eigenpy_decomposition_sparse_llt_hpp__
+#ifndef __eigenpy_decompositions_sparse_llt_hpp__
+#define __eigenpy_decompositions_sparse_llt_hpp__
 
 #include "eigenpy/eigenpy.hpp"
 #include "eigenpy/decompositions/sparse/SimplicialCholesky.hpp"
@@ -57,10 +57,11 @@ struct SimplicialLLTVisitor
         "prior to the factorization such that the factorized matrix is P A "
         "P^-1.",
         bp::no_init)
-        .def(SimplicialLLTVisitor());
+        .def(SimplicialLLTVisitor())
+        .def(IdVisitor<Solver>());
   }
 };
 
 }  // namespace eigenpy
 
-#endif  // ifndef __eigenpy_decomposition_sparse_llt_hpp__
+#endif  // ifndef __eigenpy_decompositions_sparse_llt_hpp__
