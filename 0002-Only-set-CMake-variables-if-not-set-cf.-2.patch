@@ -1,0 +1,33 @@
+From bdafa87d016df59b15839b7cfb9ad84f6c3c15af Mon Sep 17 00:00:00 2001
+From: Wolfgang Merkt <w.merkt@gmail.com>
+Date: Tue, 24 Aug 2021 19:17:07 +0100
+Subject: [PATCH 2/2] Only set CMake variables if not set, cf. #2
+
+---
+ CMakeLists.txt | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
+
+diff --git a/CMakeLists.txt b/CMakeLists.txt
+index bcc8f98..6097de4 100644
+--- a/CMakeLists.txt
++++ b/CMakeLists.txt
+@@ -43,6 +43,16 @@ else()
+   endif()
+ endif()
+ 
++IF(NOT DEFINED CMAKE_BUILD_TYPE)
++  SET(CMAKE_BUILD_TYPE "Release")
++ENDIF()
++IF(NOT DEFINED PYTHON_EXECUTABLE)
++  SET(PYTHON_EXECUTABLE "/usr/bin/python3") # specify python3 so that Debian Buster passes
++ENDIF()
++IF(NOT DEFINED CMAKE_INSTALL_LIBDIR)
++  SET(CMAKE_INSTALL_LIBDIR "lib/")
++ENDIF()
++
+ function(set_standard_output_directory target)
+   set_target_properties(
+     ${target}
+-- 
+2.25.1
+

@@ -1,14 +1,14 @@
-From 6c04fe8f350b26adb732344f349654fc2f362f82 Mon Sep 17 00:00:00 2001
+From 0828a5cd2bcfa61001c7d92dde8f388d92178b9d Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:14:50 +0100
-Subject: [PATCH 5/6] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
+Subject: [PATCH 1/2] Set CONFIG_INSTALL_DIR to share/eigenpy/cmake
 
 ---
  cmake/package-config.cmake | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
 diff --git a/cmake/package-config.cmake b/cmake/package-config.cmake
-index d7134c1..4d6c320 100644
+index 7d8e8da..90e25d7 100644
 --- a/cmake/package-config.cmake
 +++ b/cmake/package-config.cmake
 @@ -28,7 +28,7 @@ macro(_SETUP_PROJECT_PACKAGE_INIT)
@@ -20,7 +20,7 @@ index d7134c1..4d6c320 100644
    set(INCLUDE_INSTALL_DIR "include")
    set(INCLUDE_INSTALL_DESTINATION "${INCLUDE_INSTALL_DIR}/${PROJECT_NAME}")
  
-@@ -143,7 +143,7 @@ macro(SETUP_PROJECT_PACKAGE_FINALIZE)
+@@ -146,7 +146,7 @@ macro(SETUP_PROJECT_PACKAGE_FINALIZE)
  
    # Layout. This works for all platforms: * <prefix>/lib/cmake/<PROJECT-NAME> *
    # <prefix>/lib/ * <prefix>/include/
