@@ -521,26 +521,39 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
     if(MSVC)
       # FIXME: it is impossible to trigger documentation installation at
       # install, so put the target in ALL instead.
+      if(NOT TARGET doc)
+        add_custom_target(doc ALL COMMENT "Generating Doxygen documentation")
+      endif()
       add_custom_target(
-        doc ALL
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
     else(MSVC)
+      if(NOT TARGET doc)
+        add_custom_target(doc COMMENT "Generating Doxygen documentation")
+      endif()
+
       add_custom_target(
-        doc
+        ${PROJECT_NAME}-doc
         COMMAND ${DOXYGEN_EXECUTABLE} ${JRL_CMAKEMODULE_DOXYFILE_PATH}
         WORKING_DIRECTORY doc
         COMMENT "Generating Doxygen documentation")
 
       if(INSTALL_DOCUMENTATION)
-        install(CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} doc)")
+        install(
+          CODE "EXECUTE_PROCESS(COMMAND ${CMAKE_MAKE_PROGRAM} ${PROJECT_NAME}-doc)"
+        )
       endif(INSTALL_DOCUMENTATION)
     endif(MSVC)
+    add_dependencies(doc ${PROJECT_NAME}-doc)
 
     if(DOXYGEN_USE_TEMPLATE_CSS)
+      if(NOT TARGET generate-template-css)
+        add_custom_target(generate-template-css)
+      endif()
       add_custom_target(
-        generate-template-css
+        ${PROJECT_NAME}-generate-template-css
         COMMAND
           ${DOXYGEN_EXECUTABLE} -w html ${PROJECT_BINARY_DIR}/doc/header.html
           ${PROJECT_BINARY_DIR}/doc/footer.html
@@ -548,7 +561,10 @@ macro(_SETUP_PROJECT_DOCUMENTATION)
         BYPRODUCTS ${PROJECT_BINARY_DIR}/doc/header.html
                    ${PROJECT_BINARY_DIR}/doc/footer.html
                    ${PROJECT_BINARY_DIR}/doc/doxygen.css)
-      add_dependencies(doc generate-template-css)
+      add_dependencies(generate-template-css
+                       ${PROJECT_NAME}-generate-template-css)
+      add_dependencies(${PROJECT_NAME}-doc
+                       ${PROJECT_NAME}-generate-template-css)
       _set_if_undefined(DOXYGEN_HTML_HEADER
                         "${PROJECT_BINARY_DIR}/doc/header.html")
       _set_if_undefined(DOXYGEN_HTML_FOOTER
