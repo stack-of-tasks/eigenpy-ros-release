@@ -1,4 +1,4 @@
-From bdafa87d016df59b15839b7cfb9ad84f6c3c15af Mon Sep 17 00:00:00 2001
+From 488fbee796c2387897481545d1a051b2171bea14 Mon Sep 17 00:00:00 2001
 From: Wolfgang Merkt <w.merkt@gmail.com>
 Date: Tue, 24 Aug 2021 19:17:07 +0100
 Subject: [PATCH 2/2] Only set CMake variables if not set, cf. #2
@@ -8,7 +8,7 @@ Subject: [PATCH 2/2] Only set CMake variables if not set, cf. #2
  1 file changed, 10 insertions(+)
 
 diff --git a/CMakeLists.txt b/CMakeLists.txt
-index bcc8f98..6097de4 100644
+index fa9e1e7..77ac556 100644
 --- a/CMakeLists.txt
 +++ b/CMakeLists.txt
 @@ -43,6 +43,16 @@ else()
